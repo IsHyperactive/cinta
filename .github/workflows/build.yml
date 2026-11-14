@@ -1,0 +1,191 @@
+name: Compilar Cinta
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: aplicacion
+
+concurrency:
+  group: cinta-build-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  frontend-check:
+    name: Verificar interfaz
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aplicacion/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
+
+  linux-build:
+    name: Linux ${{ matrix.name }} (DEB, RPM, AppImage y portable)
+    needs: frontend-check
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x64
+            runner: ubuntu-22.04
+          - name: arm64
+            runner: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aplicacion/package-lock.json
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential curl wget file libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf rpm
+          sudo apt-get install -y libfuse2t64 || sudo apt-get install -y libfuse2
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci --no-audit --no-fund
+      - name: Verificar backend Rust
+        run: cargo check --locked --manifest-path src-tauri/Cargo.toml
+      - name: Compilar aplicación y paquetes Linux
+        run: npm run tauri build -- --bundles deb,rpm,appimage
+      - name: Verificar y preparar archivos de entrega
+        run: |
+          set -euo pipefail
+          arch='${{ matrix.name }}'
+          b=src-tauri/target/release/bundle
+          appimage=$(find $b/appimage -maxdepth 1 -type f -name '*.AppImage' -print -quit)
+          deb=$(find $b/deb -maxdepth 1 -type f -name '*.deb' -print -quit)
+          rpm=$(find $b/rpm -maxdepth 1 -type f -name '*.rpm' -print -quit)
+          bin=src-tauri/target/release/cinta
+          test -s "$appimage"; test -s "$deb"; test -s "$rpm"; test -s "$bin"
+          mkdir -p "release/linux-$arch" portable/Cinta
+          cp "$appimage" "release/linux-$arch/Cinta-linux-$arch.AppImage"
+          cp "$deb" "release/linux-$arch/Cinta-linux-$arch.deb"
+          cp "$rpm" "release/linux-$arch/Cinta-linux-$arch.rpm"
+          chmod +x "release/linux-$arch/Cinta-linux-$arch.AppImage"
+          # Portable: binario suelto + lanzador (requiere WebKitGTK 4.1 instalado)
+          cp "$bin" portable/Cinta/cinta
+          printf '#!/bin/sh\ncd "$(dirname "$0")" && exec ./cinta "$@"\n' > portable/Cinta/Cinta.sh
+          chmod +x portable/Cinta/cinta portable/Cinta/Cinta.sh
+          tar -C portable -czf "release/linux-$arch/Cinta-linux-$arch-portable.tar.gz" Cinta
+          ls -lh "release/linux-$arch"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cinta-Linux-${{ matrix.name }}
+          path: aplicacion/release/linux-${{ matrix.name }}/*
+          if-no-files-found: error
+          retention-days: 30
+
+  windows-build:
+    name: Windows ${{ matrix.name }} (NSIS, MSI y portable)
+    needs: frontend-check
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x64
+            rust_target: x86_64-pc-windows-msvc
+            msvc_arch: amd64
+          - name: ARM64
+            rust_target: aarch64-pc-windows-msvc
+            msvc_arch: amd64_arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aplicacion/package-lock.json
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+      - run: npm ci --no-audit --no-fund
+        shell: pwsh
+      - run: npm run typecheck
+      - name: Compilar aplicación e instaladores
+        shell: pwsh
+        run: npm run tauri build -- --target ${{ matrix.rust_target }} --bundles nsis,msi
+      - name: Verificar y preparar archivos de entrega
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $target = '${{ matrix.rust_target }}'
+          $arch = '${{ matrix.name }}'
+          $root = "src-tauri/target/$target/release"
+          $exe = "$root/cinta.exe"
+          $nsis = @(Get-ChildItem "$root/bundle/nsis" -Filter '*.exe' -File -ErrorAction SilentlyContinue)
+          $msi = @(Get-ChildItem "$root/bundle/msi" -Filter '*.msi' -File -ErrorAction SilentlyContinue)
+          if (-not (Test-Path $exe) -or (Get-Item $exe).Length -le 0) { throw "Falta $exe" }
+          if ($nsis.Count -eq 0) { throw 'No se generó el instalador NSIS' }
+          if ($msi.Count -eq 0) { throw 'No se generó el instalador MSI' }
+          New-Item -ItemType Directory -Force -Path "release/$arch" | Out-Null
+          Copy-Item $exe "release/$arch/Cinta-portable-$arch.exe"
+          Copy-Item $nsis[0].FullName "release/$arch/Cinta-Setup-$arch.exe"
+          Copy-Item $msi[0].FullName "release/$arch/Cinta-Setup-$arch.msi"
+          Get-ChildItem "release/$arch" -File | Format-Table Name, Length
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cinta-Windows-${{ matrix.name }}
+          path: aplicacion/release/${{ matrix.name }}/*
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-release:
+    name: Publicar en GitHub Releases
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'release:'))
+    needs: [linux-build, windows-build]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: .
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-all
+          merge-multiple: true
+      - name: Verificar entrega y generar SHA-256
+        run: |
+          set -euo pipefail
+          test "$(find release-all -type f | wc -l)" -ge 14
+          if find release-all -type f -size 0 | grep -q .; then echo "Hay archivos vacíos"; exit 1; fi
+          (cd release-all && sha256sum * | sort -k2 > SHA256SUMS.txt)
+          ls -lh release-all
+      - name: Crear o actualizar la publicación
+        run: |
+          set -euo pipefail
+          TAG="v$(node -p "require('./aplicacion/package.json').version")"
+          mapfile -d '' assets < <(find release-all -maxdepth 1 -type f -print0)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${assets[@]}" --clobber
+          else
+            gh release create "$TAG" "${assets[@]}" --target "$GITHUB_SHA" --title "Cinta $TAG" --generate-notes
+          fi

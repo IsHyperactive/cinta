@@ -1,0 +1,3 @@
+# Runtime de C estático: el .exe no necesita instalar el "Visual C++ Redistributable".
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = ["-C", "target-feature=+crt-static"]

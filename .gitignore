@@ -1,0 +1,6 @@
+node_modules
+dist
+aplicacion/src-tauri/target
+aplicacion/src-tauri/gen
+portable
+CintaData

@@ -1,0 +1,21 @@
+/* Vista «Notas» (v0.5.0) */
+.notas { max-width: 860px; }
+.notas-barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+.notas-barra input[type="search"] { flex: 1 1 220px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.notas-aviso { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+.notas-libro { margin-bottom: 26px; }
+.notas-libro h3 { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-size: 16px; margin: 0 0 8px; }
+.notas-libro h3 .link { color: var(--text); font: inherit; font-weight: 600; text-align: left; }
+.notas-libro h3 span { color: var(--muted); font-size: 13px; font-weight: 400; }
+.nota { border-left: 4px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; user-select: text; -webkit-user-select: text; }
+.nota-texto { margin: 0; font: 15px/1.5 Georgia, "Times New Roman", serif; }
+.nota-nota { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.nota small { color: var(--muted); font-size: 12px; }
+@media (pointer: coarse) { .notas-barra button { min-height: 44px; } }
+
+/* Hojas de edición y copia (v0.5.1) */
+.campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.campo input { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 15px; }
+
+.nota[role="button"] { cursor: pointer; }
+.nota[role="button"]:hover { filter: brightness(0.97); }

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Cinta",
+  "version": "0.6.1",
+  "identifier": "com.cinta.reader",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Cinta",
+        "width": 1100,
+        "height": 740,
+        "minWidth": 640,
+        "minHeight": 480
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "msi",
+      "deb",
+      "appimage",
+      "rpm"
+    ],
+    "publisher": "IsHyperactive",
+    "homepage": "https://github.com/IsHyperactive/cinta",
+    "license": "MIT",
+    "licenseFile": "../../LICENSE",
+    "category": "Education",
+    "shortDescription": "Lector de libros local, táctil y sin nube",
+    "longDescription": "Cinta es un lector de libros libre y gratuito para Windows y Linux. Lee EPUB, PDF, cómics CBZ/CBR, documentos TXT, HTML, DOCX, FB2, MOBI y AZW3, y audiolibros M4B, M4A y MP3. Tus libros, anotaciones y progreso se guardan solo en tu equipo.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/512x512.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com"
+    }
+  }
+}

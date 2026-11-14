@@ -1,0 +1,177 @@
+/* =========================================================
+   CINTA 0.6.1 — Temas de color
+   Se importa AL FINAL (main.tsx), después de styles.css y de los CSS de cada componente.
+   Solo cambian colores: estructura, tipografía e iconos se quedan como están.
+   - «Automático» no tiene reglas aquí a propósito: sigue exactamente el diseño de la 0.6.0
+     (claro/oscuro del sistema, con su bloque de escritorio ≥ 821 px).
+   - El selector html[data-tema="…"] (especificidad 0,1,1) gana sobre `:root` (0,1,0), también
+     dentro de @media (min-width: 821px) y de prefers-color-scheme.
+   - El lector (Reader.tsx, THEMES) tiene sus propios temas y no se toca.
+   Contrastes verificados con herramientas/verificacion/contraste-temas.mjs.
+   ========================================================= */
+
+html[data-tema="claro"] {
+  --bg: #ffffff;
+  --panel: #f5f5f7;
+  --text: #1d1d1f;
+  --muted: #6e6e73;          /* #86868b daba 3,6:1; oscurecido para llegar a ≥ 4,5:1 */
+  --accent: #0071e3;         /* #007aff daba 4,0:1 con texto blanco; ajustado a 4,7:1 */
+  --accent-text: #ffffff;
+  --border: rgb(29 29 31 / .12);
+  --desktop-sidebar: #f5f5f7;
+  --desktop-card: #ffffff;
+  --desktop-shadow: 0 12px 34px rgb(26 31 39 / .08);
+  color-scheme: light;
+}
+
+html[data-tema="oscuro"] {
+  --bg: #1c1c1e;
+  --panel: #2c2c2e;
+  --text: #f5f5f7;
+  --muted: #98989d;
+  --accent: #83b6f0;
+  --accent-text: #101820;
+  --border: rgb(245 245 247 / .12);
+  --desktop-sidebar: #242426;
+  --desktop-card: #2c2c2e;
+  --desktop-shadow: 0 14px 38px rgb(0 0 0 / .34);
+  color-scheme: dark;
+}
+
+html[data-tema="sepia"] {
+  --bg: #f1e7d0;
+  --panel: #e8dcc0;
+  --text: #3b2f1e;
+  --muted: #655a41;          /* #6f6247 daba 4,4:1 sobre el panel; oscurecido a 5,0:1 */
+  --accent: #8c2f3e;
+  --accent-text: #ffffff;
+  --border: rgb(59 47 30 / .16);
+  --desktop-sidebar: #e8dcc0;
+  --desktop-card: #f8f0de;
+  --desktop-shadow: 0 12px 34px rgb(59 47 30 / .14);
+  color-scheme: light;
+}
+
+html[data-tema="medianoche"] {
+  --bg: #121316;
+  --panel: #1d1f24;
+  --text: #d8dbe2;
+  --muted: #8a90a0;
+  --accent: #6aa3ea;
+  --accent-text: #0d1117;
+  --border: rgb(216 219 226 / .11);
+  --desktop-sidebar: #17181b;
+  --desktop-card: #1d1f24;
+  --desktop-shadow: 0 14px 38px rgb(0 0 0 / .42);
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------
+   Fondo personalizado (la imagen y las variables de color las calcula utilidades/fondo.ts
+   y las pone en <html style="…">; lo de aquí abajo es el valor por defecto mientras carga).
+   Capas: imagen fija → velo de atenuación → paneles translúcidos con desenfoque → contenido.
+   --------------------------------------------------------- */
+html[data-tema="fondo"] {
+  --bg: #1c1c1e;
+  --panel: #2c2c2e;
+  --text: #f5f5f7;
+  --muted: #c3c6ce;
+  --accent: #83b6f0;
+  --accent-text: #101820;
+  --border: rgb(245 245 247 / .16);
+  --desktop-sidebar: #242426;
+  --desktop-card: #2c2c2e;
+  --desktop-shadow: 0 14px 38px rgb(0 0 0 / .34);
+  --fondo-panel: 22 23 27;       /* RGB del panel (sin comas, para rgb(… / alfa)) */
+  --fondo-velo: 0 0 0;           /* RGB del velo de atenuación */
+  --fondo-velo-a: .4;            /* opacidad del velo (la fija utilidades/fondo.ts, nunca por debajo del mínimo) */
+  --fondo-blur: 14px;            /* desenfoque de los paneles */
+  --fondo-a-lateral: .66;        /* opacidad de la barra lateral y la barra superior */
+  --fondo-a-tarjeta: .72;        /* opacidad de tarjetas y estados vacíos */
+  --fondo-a-hoja: .9;            /* opacidad de hojas, menús y diálogos */
+  color-scheme: dark;
+}
+html[data-tema="fondo"][data-fondo-modo="claro"] {
+  --fondo-panel: 250 250 252;
+  --fondo-velo: 255 255 255;
+  color-scheme: light;
+}
+
+/* La imagen vive en un único elemento fijo detrás de la app (lo crea utilidades/fondo.ts). */
+.fondo-capa {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  will-change: transform;
+  background: var(--bg);
+  opacity: 0;
+}
+html[data-tema="fondo"] .fondo-capa.lista { opacity: 1; transition: opacity .3s ease; }
+.fondo-capa img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.fondo-capa .fondo-velo { position: absolute; inset: 0; background: rgb(var(--fondo-velo) / var(--fondo-velo-a)); }
+html:not([data-tema="fondo"]) .fondo-capa { display: none; }
+
+/* La biblioteca deja ver la imagen. El lector (.reader) sigue siendo opaco y con sus propios temas. */
+html[data-tema="fondo"] body,
+html[data-tema="fondo"] .app,
+html[data-tema="fondo"] .main { background: transparent; }
+
+html[data-tema="fondo"] .sidebar,
+html[data-tema="fondo"] .toolbar {
+  background: rgb(var(--fondo-panel) / var(--fondo-a-lateral));
+  -webkit-backdrop-filter: blur(var(--fondo-blur)) saturate(140%);
+  backdrop-filter: blur(var(--fondo-blur)) saturate(140%);
+}
+html[data-tema="fondo"] .meta-lectura,
+html[data-tema="fondo"] .empty,
+html[data-tema="fondo"] .row:hover,
+html[data-tema="fondo"] .new-col,
+html[data-tema="fondo"] .search,
+html[data-tema="fondo"] .sort,
+html[data-tema="fondo"] .secondary,
+html[data-tema="fondo"] .seg {
+  background-color: rgb(var(--fondo-panel) / var(--fondo-a-tarjeta));
+  -webkit-backdrop-filter: blur(var(--fondo-blur));
+  backdrop-filter: blur(var(--fondo-blur));
+}
+html[data-tema="fondo"] .sheet,
+html[data-tema="fondo"] .detail,
+html[data-tema="fondo"] .notebox,
+html[data-tema="fondo"] .toast {
+  background: rgb(var(--fondo-panel) / var(--fondo-a-hoja));
+  -webkit-backdrop-filter: blur(calc(var(--fondo-blur) * 1.4));
+  backdrop-filter: blur(calc(var(--fondo-blur) * 1.4));
+}
+html[data-tema="fondo"] .toast { color: var(--text); }
+/* Dentro del lector los paneles siguen opacos (el lector no usa la imagen). */
+html[data-tema="fondo"] .reader .sheet,
+html[data-tema="fondo"] .reader .notebox,
+html[data-tema="fondo"] .reader .toast {
+  background: var(--panel);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html[data-tema="fondo"] .scrim { background: rgb(var(--fondo-velo) / .35); }
+
+/* Sin transparencia (preferencia del sistema) o sin backdrop-filter: paneles opacos y sin desenfoque. */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-tema="fondo"] {
+    --fondo-blur: 0px;
+    --fondo-a-lateral: 1;
+    --fondo-a-tarjeta: 1;
+    --fondo-a-hoja: 1;
+  }
+  html[data-tema="fondo"] .sidebar,
+  html[data-tema="fondo"] .toolbar,
+  html[data-tema="fondo"] .sheet,
+  html[data-tema="fondo"] .detail { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-tema="fondo"] { --fondo-a-lateral: .92; --fondo-a-tarjeta: .94; --fondo-a-hoja: .97; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-tema="fondo"] .fondo-capa.lista { transition: none; }
+}

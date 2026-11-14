@@ -1,0 +1,44 @@
+# Pendientes de Cinta (hoja de ruta para quien continúe)
+
+Última actualización: 0.6.1 (2026-11-14). Actualízala en cada versión: tacha lo hecho (`[x]`) y añade lo nuevo.
+
+## Contexto del usuario (importante)
+- Quiere que Cinta imite Apple Books con archivos locales, en Windows x64/ARM64 (y Linux).
+- **Orden de prioridad que él pidió:** 1) subir el porcentaje de funciones de Apple Books; 2) pulido estético después.
+- Hoy opina que la **estética aún no le gusta** y que **faltan funciones**. Trabajar por partes y con pocos tokens: una parte por versión.
+- No cambiar el diseño ni los iconos (Phosphor) sin que lo pida; ahora SÍ lo pidió para la Parte 3.
+- Todo en español, todo ordenado en carpetas con nombre en español; nada suelto.
+
+## Parte 2 · 0.5.0 — Funciones (candidatas, por verificar contra el código actual)
+Comprobar primero qué existe ya (README y `App.tsx`); lo siguiente es lo típico de Apple Books que podría faltar:
+- [x] Biblioteca: ordenar (recientes, título, autor, última lectura, progreso) — ya existían «Quiero leer» y «Terminados» (0.5.0).
+- [x] Filtro «Leyendo» (0.5.3).
+- [x] Series (0.6.0).
+- [x] Inicio con «Continuar», «Quiero leer» y recientes (ya existía).
+- [x] Vista «Notas» con búsqueda y exportar a Markdown (0.5.0).
+- [x] Desde «Notas», saltar al pasaje (0.5.3).
+- [x] Copiar cita y «Buscar» la selección en el libro (0.6.0). [ ] Diccionario (sin internet no hay datos; ver REGISTRO-DE-CAMBIOS 0.6.0).
+- [x] Meta diaria, racha y semana (0.5.2, en localStorage).
+- [x] Tiempo de lectura en SQLite y estadísticas por libro (0.6.0).
+- [x] Tipografía EPUB: fuente, tamaño, interlineado y justificado (ya existían).
+- [x] Desplazamiento continuo y ancho del texto en EPUB (0.6.0; por probar en vivo).
+- [x] Leer en voz alta en EPUB (0.6.0; voces del sistema).
+- [x] Editar metadatos y portada (0.5.1).
+- [x] Marcar como terminado / no leído (0.5.4).
+- [x] Copia de seguridad y restauración en .zip (0.5.1; reinicio manual tras restaurar).
+- [ ] CBR con RAR real y KF8/AZW3 completo (ya anotado en CONTEXT.md).
+- [ ] Rendimiento con ≥ 1000 libros.
+
+## Parte 3 · 0.6.x — Estética
+- [ ] Pedir al usuario 2–3 capturas de referencia (o de Apple Books) y qué le disgusta exactamente antes de rediseñar.
+- [ ] Sistema de diseño único: variables CSS de color/tipografía/espaciado en `aplicacion/src/estilos/` (hoy `styles.css` tiene ~1550 líneas con varias «pasadas» apiladas; consolidar y dividir por componente).
+- [x] Temas de color: Automático, Claro, Oscuro, Sepia guinda, Medianoche (0.6.1; `estilos/temas.css`).
+- [x] Fondo personalizado con colores adaptativos y hoja «Apariencia» (0.6.1; por probar en la app real).
+- [ ] Revisar portadas, barra lateral, tarjetas y barras de lectura con los temas nuevos; aislar los paneles del lector de las variables del tema de la app.
+- [ ] Respetar reglas táctiles (objetivos ≥ 44 px, ≤ 820 px barra arriba).
+
+## Deuda técnica / verificación
+- [ ] 0.6.1: probar en la app real el fondo (diálogo de archivos, `save_background` con cuerpo binario, reinicio, copia de seguridad/restauración con `Fondos`) y fotos reales clara/oscura/colorida; `cargo check --locked` de los 4 comandos nuevos.
+- [ ] Ejecutar `npm ci`, `npm run typecheck`, `npm run build` y CI tras la reorganización de 0.4.5.
+- [ ] Probar en Windows ARM64 (Surface Pro X) y con EPUB reales con notas al pie.
+- [ ] Dividir `App.tsx` (959 líneas), `PdfReader.tsx` (978) y `lib.rs` (788) en módulos más pequeños.

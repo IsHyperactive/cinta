@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cinta</title>
+    <script>
+      /* Tema de color (0.6.1): se aplica ANTES del primer render para que no parpadee.
+         «Automático» no pone nada. Si el tema es el fondo personalizado, usa la última paleta calculada. */
+      (function () {
+        try {
+          var d = document.documentElement, t = localStorage.getItem("cinta.tema");
+          if (t === "claro" || t === "oscuro" || t === "sepia" || t === "medianoche") d.setAttribute("data-tema", t);
+          else if (t === "fondo") {
+            var p = JSON.parse(localStorage.getItem("cinta.fondo.paleta") || "null");
+            if (p && p.vars) {
+              d.setAttribute("data-tema", "fondo");
+              d.setAttribute("data-fondo-modo", p.modo);
+              for (var k in p.vars) d.style.setProperty(k, p.vars[k]);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
