@@ -21,4 +21,4 @@ Si algo falla, corrígelo; no subas con errores.
 Sigue `documentacion/guias/PROMPT-PARA-OPENCODE.md` (en la raíz): contiene los pasos exactos, incluida la etiqueta `vX.Y.Z` que dispara la compilación y la publicación en Releases.
 
 ## Qué compila el workflow
-Windows x64 y ARM64 (instalador `.exe`) y Linux x64 y ARM64 (`.deb` para Debian/Ubuntu, `.rpm` para Fedora/openSUSE, `.AppImage`). Detalle en `documentacion/guias/COMPILACIONES.md`.
+Windows x64 y ARM64 (instalador `.exe`, `.msi`, portable `.exe`) y Linux x64 y ARM64 (`.deb` para Debian/Ubuntu, `.rpm` para Fedora/openSUSE, `.AppImage`, portable `.tar.gz`). En total son **14 binarios** más `SHA256SUMS.txt`, siempre los mismos nombres. Detalle en `documentacion/guias/COMPILACIONES.md`.

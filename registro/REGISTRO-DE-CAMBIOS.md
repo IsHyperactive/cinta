@@ -14,6 +14,7 @@ Antes de empezar, lee `PENDIENTES.md`: ahí está lo siguiente que toca.
 - (nada nuevo)
 
 ### Cambiado
+- **La entrega vuelve a ser completa, como en la primera versión:** cada release publica siempre los mismos **14 binarios más `SHA256SUMS.txt`**: instalador NSIS, MSI y portable `.exe` para Windows x64 y ARM64; `.deb`, `.rpm`, AppImage y portable `.tar.gz` para Linux x64 y ARM64. El workflow ahora comprueba que estén todos, con los mismos nombres, antes de publicar.
 - **La búsqueda conserva su ancho:** ocupa hasta 390 px (o todo el ancho disponible en ventanas más estrechas) y ya no se encoge para hacer sitio. Cuando el selector de orden, el conmutador de vista y los botones de acción no caben en la misma fila, la barra superior los pasa a la fila siguiente en lugar de comprimir la búsqueda. Funciona con cualquier ancho de texto, así que también cubre Windows y ARM64.
 - **Corte del diseño móvil:** la barra lateral pasa arriba solo por debajo de 480 px, en lugar de 820 px. Cinta es una app de escritorio y su ventana mínima es 640 px, así que entre 480 y 820 px manda el diseño de escritorio con el panel a la izquierda.
 

@@ -35,7 +35,7 @@ jobs:
       - run: npm run build
 
   linux-build:
-    name: Linux ${{ matrix.name }} (DEB, RPM y AppImage)
+    name: Linux ${{ matrix.name }} (DEB, RPM, AppImage y portable)
     needs: frontend-check
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -75,12 +75,18 @@ jobs:
           appimage=$(find $b/appimage -maxdepth 1 -type f -name '*.AppImage' -print -quit)
           deb=$(find $b/deb -maxdepth 1 -type f -name '*.deb' -print -quit)
           rpm=$(find $b/rpm -maxdepth 1 -type f -name '*.rpm' -print -quit)
-          test -s "$appimage"; test -s "$deb"; test -s "$rpm"
-          mkdir -p "release/linux-$arch"
+          bin=src-tauri/target/release/cinta
+          test -s "$appimage"; test -s "$deb"; test -s "$rpm"; test -s "$bin"
+          mkdir -p "release/linux-$arch" portable/Cinta
           cp "$appimage" "release/linux-$arch/Cinta-linux-$arch.AppImage"
           cp "$deb" "release/linux-$arch/Cinta-linux-$arch.deb"
           cp "$rpm" "release/linux-$arch/Cinta-linux-$arch.rpm"
           chmod +x "release/linux-$arch/Cinta-linux-$arch.AppImage"
+          # Portable: binario suelto + lanzador (requiere WebKitGTK 4.1 instalado)
+          cp "$bin" portable/Cinta/cinta
+          printf '#!/bin/sh\ncd "$(dirname "$0")" && exec ./cinta "$@"\n' > portable/Cinta/Cinta.sh
+          chmod +x portable/Cinta/cinta portable/Cinta/Cinta.sh
+          tar -C portable -czf "release/linux-$arch/Cinta-linux-$arch-portable.tar.gz" Cinta
           ls -lh "release/linux-$arch"
       - uses: actions/upload-artifact@v4
         with:
@@ -90,7 +96,7 @@ jobs:
           retention-days: 30
 
   windows-build:
-    name: Windows ${{ matrix.name }} (instalador NSIS)
+    name: Windows ${{ matrix.name }} (NSIS, MSI y portable)
     needs: frontend-check
     runs-on: windows-latest
     strategy:
@@ -121,7 +127,7 @@ jobs:
       - run: npm run typecheck
       - name: Compilar aplicación e instaladores
         shell: pwsh
-        run: npm run tauri build -- --target ${{ matrix.rust_target }} --bundles nsis
+        run: npm run tauri build -- --target ${{ matrix.rust_target }} --bundles nsis,msi
       - name: Verificar y preparar archivos de entrega
         shell: pwsh
         run: |
@@ -131,10 +137,14 @@ jobs:
           $root = "src-tauri/target/$target/release"
           $exe = "$root/cinta.exe"
           $nsis = @(Get-ChildItem "$root/bundle/nsis" -Filter '*.exe' -File -ErrorAction SilentlyContinue)
+          $msi = @(Get-ChildItem "$root/bundle/msi" -Filter '*.msi' -File -ErrorAction SilentlyContinue)
           if (-not (Test-Path $exe) -or (Get-Item $exe).Length -le 0) { throw "Falta $exe" }
           if ($nsis.Count -eq 0) { throw 'No se generó el instalador NSIS' }
+          if ($msi.Count -eq 0) { throw 'No se generó el instalador MSI' }
           New-Item -ItemType Directory -Force -Path "release/$arch" | Out-Null
+          Copy-Item $exe "release/$arch/Cinta-portable-$arch.exe"
           Copy-Item $nsis[0].FullName "release/$arch/Cinta-Setup-$arch.exe"
+          Copy-Item $msi[0].FullName "release/$arch/Cinta-Setup-$arch.msi"
           Get-ChildItem "release/$arch" -File | Format-Table Name, Length
       - uses: actions/upload-artifact@v4
         with:
@@ -165,15 +175,36 @@ jobs:
       - name: Verificar entrega y generar SHA-256
         run: |
           set -euo pipefail
-          test "$(find release-all -type f | wc -l)" -ge 8
+          esperados=(
+            Cinta-Setup-ARM64.exe
+            Cinta-Setup-ARM64.msi
+            Cinta-Setup-x64.exe
+            Cinta-Setup-x64.msi
+            Cinta-linux-arm64-portable.tar.gz
+            Cinta-linux-arm64.AppImage
+            Cinta-linux-arm64.deb
+            Cinta-linux-arm64.rpm
+            Cinta-linux-x64-portable.tar.gz
+            Cinta-linux-x64.AppImage
+            Cinta-linux-x64.deb
+            Cinta-linux-x64.rpm
+            Cinta-portable-ARM64.exe
+            Cinta-portable-x64.exe
+          )
+          for f in "${esperados[@]}"; do
+            test -s "release-all/$f" || { echo "Falta $f"; exit 1; }
+          done
+          test "$(find release-all -maxdepth 1 -type f | wc -l)" -eq "${#esperados[@]}" || {
+            echo "La entrega debe tener exactamente ${#esperados[@]} binarios"; find release-all -maxdepth 1 -type f -printf '%f\n' | sort; exit 1;
+          }
           if find release-all -type f -size 0 | grep -q .; then echo "Hay archivos vacíos"; exit 1; fi
-          (cd release-all && sha256sum * | sort -k2 > SHA256SUMS.txt)
+          (cd release-all && LC_ALL=C sha256sum * | LC_ALL=C sort -k2 > SHA256SUMS.txt)
           ls -lh release-all
       - name: Crear o actualizar la publicación
         run: |
           set -euo pipefail
           TAG="v$(node -p "require('./aplicacion/package.json').version")"
-          mapfile -d '' assets < <(find release-all -maxdepth 1 -type f -print0)
+          mapfile -d '' assets < <(find release-all -maxdepth 1 -type f -print0 | LC_ALL=C sort -z)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "${assets[@]}" --clobber
           else
