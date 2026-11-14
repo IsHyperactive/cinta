@@ -1,5 +1,7 @@
 # Mapa de carpetas de Cinta
 
+Cuando el proyecto empezó a crecer tuve que decidir dónde iba cada cosa. Este es el resultado: una carpeta para la app, otra para la documentación, otra para las herramientas y otra para el registro de lo que va pasando. Si te pierdes, empieza por aquí.
+
 ```
 Cinta/
 ├─ README.md                 Presentación pública y descargas (GitHub lo exige en la raíz)

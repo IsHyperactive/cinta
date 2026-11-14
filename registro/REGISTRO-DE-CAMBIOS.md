@@ -24,6 +24,7 @@ Antes de empezar, lee `PENDIENTES.md`: ahí está lo siguiente que toca.
 - Guía incluida: apartado «Apariencia y fondo» en «Tu biblioteca», atajo `Ctrl + ,`, carpeta `Fondos` y accesibilidad. `GUIDE_VERSION` de «3» a «4».
 
 ### Cambiado
+- **Textos públicos:** el README y la presentación se reescribieron con una voz más cercana, de persona a persona. El icono de la app se copió a `documentacion/icono.png` y ahora se ve en el README y en la publicación de la release.
 - Contrastes de las paletas pedidas (verificados; ver `contraste-temas.mjs`): **Claro** — secundario `#86868b` daba 3,6:1 (3,3:1 sobre el panel) y el texto blanco sobre `#007aff` daba 4,0:1, así que pasan a `#6e6e73` y `#0071e3` (≥ 4,6:1 y 4,7:1). **Sepia guinda** — secundario `#6f6247` daba 4,4:1 sobre el panel; pasa a `#655a41` (5,0:1). **Oscuro** y **Medianoche** cumplen tal cual. Tarjeta de Claro `#ffffff`, de Sepia `#f8f0de` y sombras de cada tema: elegidas aquí (el pedido no las daba).
 - Sin fondo no cambia nada de lo ya existente: `styles.css`, `Reader.tsx` y los lectores no se tocaron.
 
