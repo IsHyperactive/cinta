@@ -36,7 +36,7 @@ else {
   const lineas = wf.split("\n");
   const prosa = lineas.findIndex((l) => /^\s*(pasos|estrategia|cuándo se ejecuta)\s*:\s*$/.test(l) || /^\s*\d+\.\s+\*\*/.test(l));
   prosa >= 0 ? fallo(`build.yml parece texto explicativo y no un workflow (línea ${prosa + 1}). Restáuralo desde el repositorio.`) : ok("build.yml no es prosa");
-  for (const clave of ["\non:", "\njobs:", "runs-on:", "ubuntu-22.04-arm", "windows-latest", "--bundles deb,rpm,appimage", "--bundles nsis,msi"]) {
+  for (const clave of ["\non:", "\njobs:", "runs-on:", "ubuntu-22.04-arm", "windows-latest", "--bundles deb,rpm,appimage", "--bundles nsis"]) {
     wf.includes(clave) || (clave === "\non:" && wf.startsWith("on:")) ? ok(`build.yml contiene «${clave.trim()}»`) : fallo(`build.yml no contiene «${clave.trim()}»`);
   }
 }

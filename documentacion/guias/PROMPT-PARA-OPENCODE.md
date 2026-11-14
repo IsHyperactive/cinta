@@ -35,9 +35,9 @@ Haz exactamente esto, en orden, y detente y avísame si algo falla:
 ```
 
 ## Qué deberías ver al final en GitHub → Releases → v0.6.0
-- Windows: `Cinta-Setup-x64.exe`, `Cinta-Setup-x64.msi`, `Cinta-portable-x64.exe`, y los mismos tres con `ARM64`
-- Linux x64: `Cinta-linux-x64.deb` (Debian), `.rpm` (Fedora), `.AppImage`, `-portable.tar.gz`
-- Linux ARM64: los mismos cuatro con `arm64`
+- Windows: `Cinta-Setup-x64.exe` y `Cinta-Setup-ARM64.exe`
+- Linux x64: `Cinta-linux-x64.deb` (Debian/Ubuntu), `.rpm` (Fedora/openSUSE) y `.AppImage`
+- Linux ARM64: los mismos tres con `arm64`
 - `SHA256SUMS.txt`
 
 ## Si falla algo

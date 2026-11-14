@@ -1,7 +1,7 @@
 
 # Cómo compilar y exportar Cinta (para tu uso personal)
 
-Cinta se distribuye para **Windows** (x64 y ARM64) y **Linux** (x64). Puedes desarrollar desde cualquier computadora con Linux: los paquetes de Linux se generan en tu equipo o en un servidor de compilación, y los ejecutables de Windows se compilan automáticamente en la nube. No necesitas tener Windows en tu computadora.
+Cinta se distribuye para **Windows** (x64 y ARM64) y **Linux** (x64 y ARM64). Puedes desarrollar desde cualquier computadora con Linux: los paquetes de Linux se generan en tu equipo o en un servidor de compilación, y los ejecutables de Windows se compilan automáticamente en la nube. No necesitas tener Windows en tu computadora.
 
 ## 1. Requisitos en Linux (si quieres compilar localmente)
 
@@ -30,7 +30,7 @@ Para generar los paquetes de **Linux** en tu equipo Debian/Ubuntu:
 
 ```bash
 sudo apt install libwebkit2gtk-4.1-dev build-essential
-npm --prefix aplicacion run tauri build --bundles deb,appimage
+npm --prefix aplicacion run tauri build --bundles deb,rpm,appimage
 ```
 
 Los paquetes se generarán en la carpeta `aplicacion/src-tauri/target/release/bundle/`:
@@ -51,7 +51,7 @@ GitHub ya tiene un workflow listo para compilar Cinta cada vez que subes cambios
 
 El workflow primero verifica que el código TypeScript esté correcto, y después compila en paralelo para:
 - **Linux:** paquetes `.deb`, `.rpm` y AppImage.
-- **Windows:** instaladores NSIS y MSI para x64 y ARM64.
+- **Windows:** instalador NSIS para x64 y ARM64.
 
 Cuando los trabajos terminen, abre la ejecución en **Actions → Artifacts** y descarga los paquetes para tu sistema.
 
@@ -61,10 +61,7 @@ Cuando los trabajos terminen, abre la ejecución en **Actions → Artifacts** y 
 
 Después de subir los cambios a la rama principal, el workflow de GitHub compilará automáticamente los instaladores para Windows. Puedes descargarlos en la sección de **Releases** del repositorio.
 
-Dentro de cada paquete de Windows encontrarás:
-- **Ejecutable portable:** ¡No se instala! Descomprímelo donde quieras y ejecútalo.
-- **Instalador NSIS:** El instalador tradicional que crea accesos directos.
-- **Paquete MSI:** Instalador de Windows para entornos profesionales.
+Dentro de cada paquete de Windows encontrarás un instalador NSIS: el clásico que crea accesos directos y se desinstala desde el sistema.
 
 Los artefactos se conservan durante 30 días en la plataforma de GitHub Actions.
 

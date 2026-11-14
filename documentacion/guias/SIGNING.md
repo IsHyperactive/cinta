@@ -23,7 +23,7 @@ SmartScreen desconfíe menos. **Un instalador sin firmar funciona igual**, solo 
    Solo ARM64: `.\herramientas/compilacion/compilar-firmado.ps1 -Thumbprint <HUELLA> -Arch arm64`.
 3. Resultado:
    - Instaladores: `aplicacion/src-tauri/target/<target>/release/bundle/nsis/`
-   - Portables firmados: `portable\Cinta-portable-x64.exe` y `portable\Cinta-portable-arm64.exe`
+   - Portables firmados (solo para uso local): `portable\Cinta-portable-x64.exe` y `portable\Cinta-portable-arm64.exe`
 4. Comprobar: `signtool verify /pa /v <archivo>.exe` (o clic derecho → Propiedades → Firmas digitales).
 
 El script no guarda la huella en el proyecto (usa un archivo temporal que borra al terminar). **Nunca** metas el `.pfx`

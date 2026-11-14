@@ -22,13 +22,10 @@ Después de subir los cambios autorizados a la rama principal o master:
 ### Artefactos que se descargarán
 
 - **Cinta-Linux-x64:** Contiene los paquetes `.deb`, `.rpm` y AppImage para Linux.
-- **Cinta-Windows-x64:** Contiene el ejecutable portable, el instalador NSIS y el paquete MSI para Windows de 64 bits.
+- **Cinta-Windows-x64:** Contiene el instalador NSIS para Windows de 64 bits.
 - **Cinta-Windows-ARM64:** Igual que el anterior, pero para procesadores ARM64.
 
-Dentro de cada paquete de Windows encontrarás:
-- El ejecutable portable (no necesita instalación).
-- El instalador NSIS.
-- El paquete MSI.
+El instalador NSIS crea los accesos directos y se desinstala desde el sistema.
 
 Los artefactos de compilación se conservan durante 30 días en la plataforma de GitHub Actions.
 
