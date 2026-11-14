@@ -7,6 +7,33 @@ Antes de empezar, lee `PENDIENTES.md`: ahí está lo siguiente que toca.
 
 ---
 
+## [0.7.0] · 2026-11-14 · Versión principal: «Hoja de libro», marcapáginas y archivos externos que lo recuerdan todo
+**Estado de verificación:** `verificar-release.mjs` en verde; `npm ci`, `npm run typecheck` y `npm run build` en verde; CI compila y publica los 9 archivos. La animación y el marcapáginas se probaron en una maqueta, no todavía dentro de la app real con un EPUB (queda anotado abajo).
+
+### Añadido
+- **Animación de página «Hoja de libro»** (`aplicacion/src/utilidades/hoja.ts`, usada por `lectores/Reader.tsx`): al pasar de página, la hoja gira sobre el lomo con perspectiva, se oscurece al girar, proyecta sombra sobre la página de debajo y la página nueva se asienta con un movimiento leve. Lleva el texto real del capítulo (copias A y B ya cargadas), no una hoja en blanco. Se elige en «Aa» → Animación, junto a Deslizar, Desvanecer, Zoom, Voltear, Cubo y Ninguna. Respeta `prefers-reduced-motion` y se desactiva en desplazamiento continuo.
+- **Marcapáginas con cinta**: al marcar una página, una cinta cuelga del centro del libro y se retira al quitar el marcador. En «Aa» hay **16 diseños** de cinta para elegir; el elegido se guarda con las preferencias del lector.
+- **Gesto de rueda/touchpad** (`utilidades/gestos.ts`): un deslizamiento de dos dedos pasa una sola página, aunque el touchpad siga enviando inercia; también funciona con la rueda del ratón. Se aplica a EPUB, PDF y cómics, y respeta el modo manga y el zoom.
+- **Los archivos abiertos sin agregar lo recuerdan todo**: posición y porcentaje (`ext_progress`) y marcadores, resaltados, notas y trazos (`annotations`, clave `p:<ruta>`). Al agregar después el libro a la biblioteca, su posición y sus anotaciones pasan al libro. La ruta se normaliza (`norm_ext_path`) para que «Abrir archivo», «Abrir con» y arrastrar y soltar usen la misma clave. Detalle en `documentacion/proyecto/MEMORIA-ARCHIVOS-EXTERNOS.md`.
+- `VERSIONES-PERMITIDAS.md`: lista cerrada de las 9 salidas permitidas, en la raíz del repositorio.
+- `documentacion/guias/PROMPT-VERSION-PRINCIPAL.md`: procedimiento usado para sustituir las versiones descontinuadas por esta.
+
+### Cambiado
+- **Esta versión pasa a ser la versión principal.** Las releases y etiquetas **v0.6.1 y v0.6.2 quedaron eliminadas** por descontinuadas (tenían varios fallos); la única versión publicada es la **0.7.0**.
+- La entrega sigue siendo de **9 archivos exactos**: los dos portables de Windows, `.deb`/`.rpm`/AppImage de Linux x64 y ARM64, y `SHA256SUMS.txt`.
+- El icono de marcador de EPUB, PDF y documentos ahora refleja el estado activo (`active={marked}`), igual que en el resto de lectores.
+
+### Corregido
+- **La memoria de un archivo abierto sin agregar se perdía según cómo se abriera**: la misma ruta podía guardarse con `\\?\`, con `\` o con mayúsculas distintas. Ahora se normaliza siempre y se leen también las filas antiguas.
+- **Al agregar a la biblioteca un archivo ya leído**, se conservaban la posición y las anotaciones; ahora se conservan también las guardadas con la ruta normalizada.
+- **El gesto de dos dedos ya no salta varias páginas** por una sola ráfaga de inercia.
+
+### Falta por hacer
+- Probar «Hoja de libro» y el marcapáginas dentro de la app real con un EPUB real, en WebView2 (Windows) y WebKitGTK (Linux); solo se probaron en una maqueta.
+- Probar los 16 diseños de cinta y comprobar que la cinta no tapa texto ni controles en ventanas estrechas.
+- Probar los gestos de touchpad en equipos reales (Windows y Linux) y con el modo manga activado.
+- Probar la memoria de archivos externos con «Abrir archivo», «Abrir con» y arrastrar y soltar sobre el mismo archivo, y luego agregarlo a la biblioteca.
+
 ## [0.6.2] · 2026-11-14 · La búsqueda de la biblioteca ya no se aplasta ni cae bajo la barra lateral
 **Estado de verificación:** `npm run typecheck` y `npm run build` en verde; `verificar-release.mjs` en verde. La release v0.6.2 se republicó desde GitHub Actions con **9 archivos: 8 binarios más `SHA256SUMS.txt`** (Windows x64/ARM64: un `.exe` portable por arquitectura; Linux x64/ARM64: `.deb`, `.rpm` y AppImage); comprobé los checksums de los portables de Windows x64/ARM64 y del AppImage de Linux x64. Medido en el DOM real (Firefox WebDriver BiDi) a 1300, 1100, 1041, 1040, 1000, 950, 900, 850, 821, 820, 760, 700, 640, 626, 600, 500 y 480 px, tanto en Inicio como en «Libros» con el selector de orden y el conmutador de vista visibles: en todos, la barra lateral sigue a la izquierda y la búsqueda queda dentro de la barra superior con su ancho completo (390 px, o todo el ancho disponible si la ventana es más estrecha), sin encogerse. También en WebKitGTK (el motor que usa la app en Linux) a 1366 px y en la app Tauri real por AT-SPI (búsqueda en la fila superior). En móvil real (≤ 479 px) se conserva el diseño anterior con la barra arriba.
 

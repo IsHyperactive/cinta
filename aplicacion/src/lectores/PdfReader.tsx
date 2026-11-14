@@ -6,6 +6,7 @@ import NoteDialog from "../componentes/NoteDialog";
 import InkLayer, { type InkStroke } from "../componentes/InkLayer";
 import { HL_COLORS, INK_COLORS, reduceMotion, type Ann } from "../utilidades/annot";
 import Icon from "../componentes/AppleIcon";
+import { crearGestoRueda } from "../utilidades/gestos";
 
 type PdfBook = { id: number; title: string; path?: string; progressCfi: string | null };
 type Hit = { page: number; snippet: string };
@@ -506,6 +507,8 @@ export default function PdfReader({ book, onClose, onAdd }: { book: PdfBook; onC
   };
   const applyRef = useRef(applyZoom);
   applyRef.current = applyZoom;
+  const pageRef = useRef(1);
+  pageRef.current = page;
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
 
@@ -529,8 +532,10 @@ export default function PdfReader({ book, onClose, onAdd }: { book: PdfBook; onC
   useEffect(() => {
     const s = scroller.current;
     if (!s) return;
+    // Dos dedos en el touchpad de lado: página anterior / siguiente (el desplazamiento vertical sigue siendo continuo)
+    const gesto = crearGestoRueda((dir) => goToPage(pageRef.current + dir), { activo: () => s.scrollWidth <= s.clientWidth + 2 } /* con zoom y desborde lateral, de lado = mover la página */);
     const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return;
+      if (!e.ctrlKey) { gesto(e); return; }
       e.preventDefault();
       const r = s.getBoundingClientRect();
       applyRef.current(zoomRef.current * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
@@ -796,7 +801,7 @@ export default function PdfReader({ book, onClose, onAdd }: { book: PdfBook; onC
         <button className="rbtn icon-only" onClick={openToc} aria-label="Contenido" title="Contenido"><Icon name="contents" /><span className="reader-mobile-label">Contenido</span></button>
         <button className="rbtn icon-only" onClick={() => setPanel("search")} aria-label="Buscar" title="Buscar"><Icon name="search" /><span className="reader-mobile-label">Buscar</span></button>
         <button className={"rbtn bm" + (marked ? " on" : "")} onClick={toggleBookmark} aria-label={marked ? "Quitar marcador" : "Agregar marcador"} aria-pressed={marked}>
-          <Icon name="bookmark" /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
+          <Icon name="bookmark" active={marked} /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
         </button>
         <button className={"rbtn" + (penOn ? " on" : "")} onClick={() => { setPenOn((v) => !v); setEraser(false); window.getSelection()?.removeAllRanges(); }} aria-pressed={penOn}><Icon name="pencil" /><span className="reader-mobile-label">Lápiz</span></button>
         <button className="rbtn aa" onClick={() => setPanel(panel === "look" ? null : "look")} aria-label="Apariencia y zoom">Aa</button>

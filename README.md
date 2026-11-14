@@ -45,15 +45,17 @@ chmod +x Cinta-linux-x64.AppImage
 sudo apt install ./Cinta-linux-x64.deb
 ```
 
-## Lo nuevo en la 0.6.2
+## Lo nuevo en la 0.7.0
 
-Esta versión arregla la búsqueda y deja la entrega en 9 archivos: Windows portable y tres formatos de Linux por arquitectura.
+Esta es la versión principal: sustituye a la 0.6.1 y la 0.6.2, que quedaron descontinuadas por sus fallos.
 
-- **La búsqueda ya no se aplasta.** Conserva su ancho (hasta 390 px) y, si los controles no caben, la barra superior los pasa a otra fila. La barra lateral se queda a la izquierda en todas las ventanas de escritorio.
-- **Volvieron los portables.** Cada release publica siempre los mismos 9 archivos: `Cinta-portable-x64.exe` y `Cinta-portable-ARM64.exe`; `.deb`, `.rpm` y AppImage para Linux x64 y ARM64; y `SHA256SUMS.txt`. En Windows no hay instaladores: Cinta es portable.
-- Si vienes de la 0.6.1, esta versión también incluye los **temas de color** y el **fondo personalizado**.
+- **«Hoja de libro».** El lector EPUB puede pasar de página como un libro de papel: la hoja gira sobre el lomo, se oscurece al girar y deja una sombra sobre la página siguiente. Se elige en «Aa» → Animación.
+- **Marcapáginas con cinta.** Al marcar una página, una cinta cuelga del centro del libro. Hay 16 diseños para elegir en «Aa» y se recuerda el que elijas.
+- **Los archivos abiertos sin agregar lo recuerdan todo.** Posición, porcentaje, marcadores, resaltados, notas y trazos. Si después agregas el libro a la biblioteca, todo pasa con él.
+- **Gestos de touchpad.** Un deslizamiento de dos dedos pasa una sola página, sin saltos por la inercia. Funciona en EPUB, PDF y cómics.
+- **La entrega sigue en 9 archivos:** `Cinta-portable-x64.exe`, `Cinta-portable-ARM64.exe`, `.deb`, `.rpm` y AppImage para Linux x64 y ARM64, más `SHA256SUMS.txt`. Sin instaladores ni formatos extra.
 
-Y si vienes de más atrás, la 0.6.0 trajo las **series**, el **tiempo de lectura**, la **voz** en EPUB, el **desplazamiento continuo**, el **ancho del texto** y los botones de **copiar cita** y **buscar** al seleccionar.
+La 0.7.0 también incluye los **temas de color**, el **fondo personalizado**, la **búsqueda que no se aplasta** y, si vienes de más atrás, las **series**, el **tiempo de lectura**, la **voz** en EPUB, el **desplazamiento continuo**, el **ancho del texto** y los botones de **copiar cita** y **buscar** al seleccionar.
 
 ## Lo que puedes hacer
 

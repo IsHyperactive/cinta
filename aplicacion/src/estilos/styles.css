@@ -1614,3 +1614,89 @@ svg.ico.ico-apple.pico { display: block; fill: currentColor; stroke: none; width
     flex: 0 0 auto;
   }
 }
+
+
+/* =========================================================
+   CINTA — correcciones de maquetación
+   1) La barra superior (búsqueda + botones) ya no se mete bajo la
+      barra lateral y queda centrada en el área de contenido.
+   2) La lista de tipos de letra del lector deja de heredar el estilo
+      de los botones de «vista» (caja diminuta de 29×27 px).
+   ========================================================= */
+.main { --main-pad: 28px; }
+@media (min-width: 821px) { .main { --main-pad: 42px; } }
+
+@media (min-width: 480px) {
+  .main { padding-inline: var(--main-pad); }
+  .toolbar {
+    margin-inline: calc(var(--main-pad) * -1);
+    padding-inline: var(--main-pad);
+    justify-content: center;
+  }
+}
+
+.seg.col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.seg.col .fontbtn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  font-size: 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+.seg.col .fontbtn:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.seg.col .fontbtn.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: inherit;
+}
+
+/* Animaciones de página: el escenario necesita su propia capa 3D y no puede desbordar la pantalla */
+.reader { overflow: hidden; }
+.reader .stage { backface-visibility: hidden; will-change: transform, opacity; }
+.pop .row.wrap { flex-wrap: wrap; }
+.pop .row.wrap button { flex: 1 1 30%; }
+
+/* Animación «Hoja de libro» (utilidades/hoja.ts). La capa está oculta salvo durante el giro, pero sus copias del capítulo
+   se mantienen cargadas para que la hoja lleve el texto desde el primer fotograma. */
+.hoja-capa { position: absolute; z-index: 3; pointer-events: none; visibility: hidden; }
+.hoja-capa.on { visibility: visible; }
+.hoja-hoja, .hoja-sombra-caja { position: absolute; inset: 0; overflow: hidden; }
+.hoja-hoja { transform-origin: 0 50%; will-change: transform; }
+.hoja-cont { position: absolute; inset: 0; }
+.hoja-cont iframe { position: absolute; border: 0; background: transparent; }
+.hoja-lomo { position: absolute; inset: 0 auto 0 0; width: 7%; background: linear-gradient(90deg, rgba(0,0,0,.16), transparent); }
+.hoja-brillo { position: absolute; inset: 0; opacity: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 35%, rgba(0,0,0,.2)); }
+.hoja-oscuro { position: absolute; inset: 0; opacity: 0; background: #000; }
+.hoja-sombra { position: absolute; top: 0; bottom: 0; left: 0; opacity: 0; will-change: transform, opacity;
+  background: linear-gradient(90deg, rgba(0,0,0,.42), rgba(0,0,0,.16) 40%, transparent); }
+
+/* Marcapáginas: cinta colgando del centro del escenario (el lomo, entre las dos páginas cuando se ven dos) */
+.marcapaginas { position: absolute; z-index: 4; left: 50%; top: 48px; height: clamp(96px, 18vh, 160px); width: auto; pointer-events: none; user-select: none;
+  transform: translateX(-50%); transform-origin: top center; filter: drop-shadow(1px 3px 3px rgba(0,0,0,.3)); animation: cintaCae .45s cubic-bezier(.2,.9,.25,1.1) both; }
+.marcapaginas.sale { animation: cintaSube .26s ease-in both; }
+@keyframes cintaCae { from { transform: translateX(-50%) translateY(-104%); } }
+@keyframes cintaSube { to { transform: translateX(-50%) translateY(-104%); } }
+@media (min-width: 821px) { .marcapaginas { top: 68px; } }
+.cintas-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.cinta-op { height: 54px; padding: 3px; border: 1px solid transparent; border-radius: 6px; background: none; cursor: pointer; display: grid; place-items: center; }
+.cinta-op img { height: 100%; width: auto; }
+.cinta-op.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }

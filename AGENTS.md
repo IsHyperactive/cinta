@@ -9,6 +9,8 @@ Repositorio: https://github.com/IsHyperactive/cinta — rama única: `main`.
 3. **No borres ramas ni reescribas historial** (nada de `push --force`, `reset --hard` sobre `main`). Todo se sube como un commit nuevo encima de `main`.
 4. **No cambies el diseño ni los iconos** (Phosphor Icons, ver `aplicacion/src/AppleIcon.tsx`) salvo que se pida.
 5. **No toques `documentacion/proyecto/CONTEXT.md` salvo para añadir** una entrada al registro de cambios.
+6. **Solo existen las 9 compilaciones de `VERSIONES-PERMITIDAS.md`**, con esos nombres exactos. No añadas ni quites formatos.
+7. **Un archivo abierto sin agregar recuerda posición, marcadores y resaltados** como uno de la biblioteca: lee `documentacion/proyecto/MEMORIA-ARCHIVOS-EXTERNOS.md`.
 
 ## Antes de subir (siempre)
 ```

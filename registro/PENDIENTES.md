@@ -1,6 +1,6 @@
 # Pendientes de Cinta (hoja de ruta para quien continúe)
 
-Última actualización: 0.6.2 (2026-11-14). Actualízala en cada versión: tacha lo hecho (`[x]`) y añade lo nuevo.
+Última actualización: 0.7.0 (2026-11-14). Actualízala en cada versión: tacha lo hecho (`[x]`) y añade lo nuevo.
 
 ## Contexto del usuario (importante)
 - Quiere que Cinta imite Apple Books con archivos locales, en Windows x64/ARM64 (y Linux).
@@ -28,6 +28,17 @@ Comprobar primero qué existe ya (README y `App.tsx`); lo siguiente es lo típic
 - [x] Copia de seguridad y restauración en .zip (0.5.1; reinicio manual tras restaurar).
 - [ ] CBR con RAR real y KF8/AZW3 completo (ya anotado en CONTEXT.md).
 - [ ] Rendimiento con ≥ 1000 libros.
+
+## Parte 4 · 0.7.0 — Versión principal (sustituye a 0.6.1 y 0.6.2)
+- [x] **Animación «Hoja de libro»** en EPUB: giro sobre el lomo con perspectiva, sombra y texto real de la página.
+- [x] **Marcapáginas con cinta** al marcar la página, con 16 diseños elegibles en «Aa».
+- [x] **Gestos de rueda/touchpad** para pasar una sola página por gesto en EPUB, PDF y cómics.
+- [x] **Archivos abiertos sin agregar** recuerdan posición, marcadores, resaltados, notas y trazos; al agregarlos pasan al libro.
+- [x] Releases y etiquetas v0.6.1 y v0.6.2 eliminadas; la única versión publicada es la 0.7.0.
+- [ ] Probar «Hoja de libro» y el marcapáginas en la app real con un EPUB, en WebView2 y WebKitGTK (solo se probaron en maqueta).
+- [ ] Probar los 16 diseños de cinta y que no tapen texto ni controles en ventanas estrechas.
+- [ ] Probar los gestos de touchpad en Windows y Linux, incluido el modo manga.
+- [ ] Probar la memoria de archivos externos con «Abrir archivo», «Abrir con» y arrastrar y soltar, y luego agregar el libro a la biblioteca.
 
 ## Parte 3 · 0.6.x — Estética
 - [ ] Pedir al usuario 2–3 capturas de referencia (o de Apple Books) y qué le disgusta exactamente antes de rediseñar.

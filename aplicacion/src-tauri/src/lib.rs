@@ -431,18 +431,18 @@ async fn add_books(
         let id = conn.last_insert_rowid();
         // Si ese archivo ya se había leído sin agregarlo, conserva su posición.
         conn.execute(
-            "UPDATE books SET progress_cfi = (SELECT cfi FROM ext_progress WHERE path = ?1),
-                              progress_pct = COALESCE((SELECT pct FROM ext_progress WHERE path = ?1), 0),
-                              last_read_at = COALESCE((SELECT updated FROM ext_progress WHERE path = ?1), 0)
+            "UPDATE books SET progress_cfi = (SELECT cfi FROM ext_progress WHERE path IN (?1, ?3) ORDER BY updated DESC LIMIT 1),
+                              progress_pct = COALESCE((SELECT pct FROM ext_progress WHERE path IN (?1, ?3) ORDER BY updated DESC LIMIT 1), 0),
+                              last_read_at = COALESCE((SELECT updated FROM ext_progress WHERE path IN (?1, ?3) ORDER BY updated DESC LIMIT 1), 0)
              WHERE id = ?2",
-            params![src_s, id],
+            params![src_s, id, norm_ext_path(&src_s)],
         )
         .map_err(err)?;
         // Al agregar un libro que antes se abrió sin importar, conserva también sus marcadores,
         // resaltados, notas y trazos. La clave externa usa la ruta original exacta.
         conn.execute(
-            "UPDATE annotations SET key = ?1 WHERE key = ?2",
-            params![format!("b:{id}"), format!("p:{src_s}")],
+            "UPDATE annotations SET key = ?1 WHERE key = ?2 OR key = ?3",
+            params![format!("b:{id}"), format!("p:{src_s}"), format!("p:{}", norm_ext_path(&src_s))],
         )
         .map_err(err)?;
 
@@ -639,6 +639,22 @@ fn set_book_collection(book_id: i64, collection_id: i64, member: bool, db: State
     Ok(())
 }
 
+/// Forma estable de la ruta de un archivo abierto sin agregar: sin prefijo `\\?\`, con `/` y, en Windows,
+/// en minúsculas. Así «Abrir archivo», «Abrir con» y el arrastrar y soltar dan la MISMA clave y la memoria
+/// (posición, marcadores, resaltados, notas) no se pierde por diferencias de mayúsculas o barras.
+fn norm_ext_path(p: &str) -> String {
+    let s = p.strip_prefix("\\\\?\\").unwrap_or(p).replace('\\', "/");
+    if cfg!(windows) { s.to_lowercase() } else { s }
+}
+
+/// Igual que `norm_ext_path` pero para claves de anotaciones: solo toca las de la forma «p:<ruta>».
+fn norm_ann_key(key: &str) -> String {
+    match key.strip_prefix("p:") {
+        Some(p) => format!("p:{}", norm_ext_path(p)),
+        None => key.to_string(),
+    }
+}
+
 #[derive(Serialize)]
 struct ExtProgress {
     cfi: String,
@@ -655,13 +671,18 @@ fn set_progress(id: i64, cfi: String, pct: Option<f64>, path: Option<String>, db
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
     if id < 0 {
-        if let Some(path) = path {
+        if let Some(raw) = path {
+            let path = norm_ext_path(&raw);
             conn.execute(
                 "INSERT INTO ext_progress (path, cfi, pct, updated) VALUES (?1, ?2, COALESCE(?3, 0), ?4)
                  ON CONFLICT(path) DO UPDATE SET cfi = ?2, pct = COALESCE(?3, pct), updated = ?4",
                 params![path, cfi, pct, now],
             )
             .map_err(err)?;
+            // Una fila antigua con la ruta sin normalizar ya no hace falta
+            if raw != path {
+                conn.execute("DELETE FROM ext_progress WHERE path = ?1", params![raw]).map_err(err)?;
+            }
         }
         return Ok(());
     }
@@ -677,9 +698,12 @@ fn set_progress(id: i64, cfi: String, pct: Option<f64>, path: Option<String>, db
 #[tauri::command]
 fn get_external_progress(path: String, db: State<Db>) -> Result<Option<ExtProgress>, String> {
     let conn = db.0.lock().map_err(err)?;
-    let mut stmt = conn.prepare("SELECT cfi, pct FROM ext_progress WHERE path = ?1").map_err(err)?;
+    let norm = norm_ext_path(&path);
+    let mut stmt = conn
+        .prepare("SELECT cfi, pct FROM ext_progress WHERE path = ?1 OR path = ?2 ORDER BY updated DESC LIMIT 1")
+        .map_err(err)?;
     let mut rows = stmt
-        .query_map(params![path], |r| Ok(ExtProgress { cfi: r.get(0)?, pct: r.get(1)? }))
+        .query_map(params![path, norm], |r| Ok(ExtProgress { cfi: r.get(0)?, pct: r.get(1)? }))
         .map_err(err)?;
     Ok(rows.next().transpose().map_err(err)?)
 }
@@ -689,10 +713,10 @@ fn get_external_progress(path: String, db: State<Db>) -> Result<Option<ExtProgre
 fn list_annotations(key: String, db: State<Db>) -> Result<Vec<Annotation>, String> {
     let conn = db.0.lock().map_err(err)?;
     let mut stmt = conn
-        .prepare("SELECT id, kind, loc, text, color, note, created FROM annotations WHERE key = ?1 ORDER BY created, id")
+        .prepare("SELECT id, kind, loc, text, color, note, created FROM annotations WHERE key = ?1 OR key = ?2 ORDER BY created, id")
         .map_err(err)?;
     let rows = stmt
-        .query_map(params![key], |r| {
+        .query_map(params![key, norm_ann_key(&key)], |r| {
             Ok(Annotation {
                 id: r.get(0)?,
                 kind: r.get(1)?,
@@ -940,6 +964,7 @@ fn add_annotation(
     if kind != "bookmark" && kind != "highlight" && kind != "ink" {
         return Err("tipo de anotación no válido".into());
     }
+    let key = norm_ann_key(&key);
     let conn = db.0.lock().map_err(err)?;
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)

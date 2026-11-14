@@ -637,7 +637,7 @@ export default function App() {
     } catch {}
   };
 
-  /** Abre un archivo directamente desde su ubicación, SIN agregarlo a la biblioteca (no se copia ni se guarda progreso). */
+  /** Abre un archivo directamente desde su ubicación, SIN agregarlo a la biblioteca (no se copia; sí se guarda por ruta la posición, los marcadores, resaltados, notas y trazos). */
   const openExternal = useCallback(async (path: string) => {
     const name = path.split(/[\\/]/).pop() ?? path;
     const dot = name.lastIndexOf(".");

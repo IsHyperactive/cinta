@@ -367,7 +367,7 @@ export default function DocReader({ book, onClose, onAdd }: { book: DocBook; onC
         <button className="rbtn icon-only" onClick={() => setPanel("toc")} aria-label="Contenido" title="Contenido"><Icon name="contents" /><span className="reader-mobile-label">Contenido</span></button>
         <button className="rbtn icon-only" onClick={() => setPanel("search")} aria-label="Buscar" title="Buscar"><Icon name="search" /><span className="reader-mobile-label">Buscar</span></button>
         <button className={"rbtn bm" + (marked ? " on" : "")} onClick={toggleBookmark} aria-pressed={marked} aria-label={marked ? "Quitar marcador" : "Agregar marcador"}>
-          <Icon name="bookmark" /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
+          <Icon name="bookmark" active={marked} /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
         </button>
         <button className="rbtn" onClick={() => setPrefs((p) => ({ ...p, size: Math.max(12, p.size - 2) }))} aria-label="Letra más pequeña">A−</button>
         <button className="rbtn" onClick={() => setPrefs((p) => ({ ...p, size: Math.min(32, p.size + 2) }))} aria-label="Letra más grande">A+</button>

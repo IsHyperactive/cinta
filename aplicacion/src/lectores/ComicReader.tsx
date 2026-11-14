@@ -1,3 +1,4 @@
+import { crearGestoRueda } from "../utilidades/gestos";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import JSZip from "jszip";
@@ -93,6 +94,17 @@ export default function ComicReader({ book, onClose, onAdd }: { book: ComicBook;
   const go = useCallback((d: number) => setI((x) => Math.max(0, Math.min(pages.length - 1, x + d))), [pages.length]);
   const next = () => go(rtl ? -1 : 1);
   const prev = () => go(rtl ? 1 : -1);
+
+  // Dos dedos en el touchpad de lado: página siguiente / anterior (respeta el modo manga)
+  const goRef = useRef(go);
+  goRef.current = go;
+  const rtlRef = useRef(rtl);
+  rtlRef.current = rtl;
+  useEffect(() => {
+    const h = crearGestoRueda((dir) => goRef.current(rtlRef.current ? -dir : dir));
+    window.addEventListener("wheel", h, { passive: false });
+    return () => window.removeEventListener("wheel", h);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -4,12 +4,15 @@ import ePub from "epubjs";
 import NoteDialog from "../componentes/NoteDialog";
 import AppleIcon from "../componentes/AppleIcon";
 import { HL_COLORS, reduceMotion, type Ann } from "../utilidades/annot";
+import { crearHoja, type Hoja } from "../utilidades/hoja";
+import { crearGestoRueda } from "../utilidades/gestos";
 
 type ReaderBook = { id: number; title: string; path?: string; progressCfi: string | null };
 type TocItem = { label: string; href: string; depth: number };
 type ThemeId = "claro" | "sepia" | "gris" | "oscuro";
 type Margen = "estrecho" | "normal" | "ancho";
-type Prefs = { theme: ThemeId; size: number; font: string; line: number; justify: boolean; scroll: boolean; margen: Margen; rate: number };
+type Anim = "ninguna" | "deslizar" | "desvanecer" | "zoom" | "voltear" | "cubo" | "hoja";
+type Prefs = { theme: ThemeId; size: number; font: string; line: number; justify: boolean; scroll: boolean; margen: Margen; rate: number; anim: Anim; gesto: boolean; cinta: string };
 type Hit = { cfi: string; excerpt: string };
 type Sel = { mode: "new"; cfiRange: string; text: string } | { mode: "edit"; id: number };
 type TocTab = "toc" | "marks" | "notes";
@@ -28,7 +31,17 @@ const LINES = [
   { v: 1.6, label: "Normal" },
   { v: 2, label: "Amplio" },
 ];
-const DEFAULT_PREFS: Prefs = { theme: "claro", size: 100, font: "Georgia", line: 0, justify: false, scroll: false, margen: "normal", rate: 1 };
+const DEFAULT_PREFS: Prefs = { theme: "claro", size: 100, font: "Georgia", line: 0, justify: false, scroll: false, margen: "normal", rate: 1, anim: "deslizar", gesto: true, cinta: "c01" };
+const ANIMS: { v: Anim; label: string }[] = [
+  { v: "ninguna", label: "Ninguna" },
+  { v: "deslizar", label: "Deslizar" },
+  { v: "desvanecer", label: "Desvanecer" },
+  { v: "zoom", label: "Zoom" },
+  { v: "voltear", label: "Voltear" },
+  { v: "cubo", label: "Cubo" },
+  { v: "hoja", label: "Hoja de libro" },
+];
+const CINTAS = Array.from({ length: 16 }, (_, i) => `c${String(i + 1).padStart(2, "0")}`);
 const MARGENES: { v: Margen; label: string }[] = [
   { v: "estrecho", label: "Estrecho" },
   { v: "normal", label: "Normal" },
@@ -111,6 +124,15 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
   const [sel, setSel] = useState<Sel | null>(null);
   const [noteFor, setNoteFor] = useState<number | null>(null);
   const [marked, setMarked] = useState(false);
+  // Marcapáginas: la cinta cuelga al poner un marcador y sube al quitarlo (se mantiene montada mientras sale)
+  const [cintaVista, setCintaVista] = useState(false);
+  const [cintaSale, setCintaSale] = useState(false);
+  useEffect(() => {
+    if (marked) { setCintaVista(true); setCintaSale(false); return; }
+    setCintaSale(true);
+    const id = window.setTimeout(() => { setCintaVista(false); setCintaSale(false); }, 280);
+    return () => window.clearTimeout(id);
+  }, [marked]);
   const [voz, setVoz] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const vozRef = useRef(false);
@@ -133,7 +155,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
     const loc = rendition.current?.currentLocation?.();
     if (!loc?.start || !loc?.end) return [] as Ann[];
     return annsRef.current.filter(
-      (a) => a.kind === "bookmark" && cmpCfi(a.loc, loc.start.cfi) >= 0 && cmpCfi(a.loc, loc.end.cfi) <= 0
+      (a) => a.kind === "bookmark" && (a.loc === loc.start.cfi || (cmpCfi(a.loc, loc.start.cfi) >= 0 && cmpCfi(a.loc, loc.end.cfi) <= 0))
     );
   };
   const refreshMarked = () => setMarked(bookmarksHere().length > 0);
@@ -273,27 +295,69 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
       document.removeEventListener("visibilitychange", hidden);
     };
   }, [flush]);
-  /** Pasa de página con una pequeña animación de deslizamiento (como Apple Books). */
+  const hojaRef = useRef<Hoja | null>(null);
+  const getHoja = () =>
+    (hojaRef.current ??= crearHoja({
+      host: host.current!,
+      activo: () => prefsRef.current.anim === "hoja" && !prefsRef.current.scroll,
+      firma: () => {
+        const p = prefsRef.current;
+        const h = host.current;
+        return [p.theme, p.size, p.font, p.line, p.justify, p.margen, h?.clientWidth, h?.clientHeight].join("|");
+      },
+    }));
+  useEffect(() => () => { hojaRef.current?.destruir(); hojaRef.current = null; }, []);
+  /** Pasa de página con la animación elegida en los ajustes (Deslizar, Desvanecer, Zoom, Voltear, Cubo, Hoja de libro o ninguna). */
   const turn = async (dir: 1 | -1) => {
     const r = rendition.current;
     const el = host.current;
     if (!r) return;
-    try {
-      await (dir > 0 ? r.next() : r.prev());
-    } catch {
-      /* sin más páginas */
+    const cambiar = async () => {
+      try {
+        await (dir > 0 ? r.next() : r.prev());
+      } catch {
+        /* sin más páginas */
+      }
+    };
+    // «Hoja de libro»: la hoja gira sobre el lomo (ver utilidades/hoja.ts). Si aún no está lista (p. ej. recién abierto el libro)
+    // devuelve false sin haber cambiado de página y este giro se hace con «Voltear».
+    if (el && prefsRef.current.anim === "hoja" && !prefsRef.current.scroll && !reduceMotion()) {
+      el.style.transition = "none";
+      el.style.transform = ""; // por si venía de arrastrar la página con el dedo
+      if (await getHoja().pasar(dir, cambiar)) return;
     }
-    if (!el || reduceMotion()) {
-      if (el) { el.style.transition = ""; el.style.transform = ""; el.style.opacity = ""; }
-      return;
+    await cambiar();
+    const anim = prefsRef.current.anim === "hoja" ? (prefsRef.current.scroll ? "ninguna" : "voltear") : prefsRef.current.anim;
+    const limpiar = () => { if (el) { el.style.transition = ""; el.style.transform = ""; el.style.opacity = ""; el.style.transformOrigin = ""; } };
+    if (!el || anim === "ninguna" || reduceMotion()) return limpiar();
+    // Estado inicial de cada animación (la página nueva ya está puesta; se «llega» desde aquí hasta la posición normal)
+    let from = "", opacity = "0.15", origin = "";
+    let trans = "transform .3s cubic-bezier(.32,.72,0,1), opacity .22s ease-out";
+    if (anim === "deslizar") from = `translateX(${dir * 28}px)`;
+    else if (anim === "desvanecer") { opacity = "0"; trans = "opacity .38s ease-out"; }
+    else if (anim === "zoom") { from = "scale(.94)"; opacity = "0.2"; trans = "transform .34s cubic-bezier(.2,.8,.2,1), opacity .28s ease-out"; }
+    else if (anim === "voltear") {
+      // Como pasar la hoja de un libro: la página nueva gira desde el lomo
+      origin = dir > 0 ? "left center" : "right center";
+      from = `perspective(1800px) rotateY(${dir > 0 ? -62 : 62}deg)`;
+      opacity = "0.35";
+      trans = "transform .5s cubic-bezier(.22,.8,.24,1), opacity .35s ease-out";
+    } else if (anim === "cubo") {
+      // Cubo giratorio: la página nueva entra desde el lado girando sobre sí misma
+      origin = dir > 0 ? "right center" : "left center";
+      from = `perspective(1600px) translateX(${dir * 38}%) rotateY(${dir > 0 ? 70 : -70}deg)`;
+      opacity = "0.3";
+      trans = "transform .5s cubic-bezier(.22,.8,.24,1), opacity .35s ease-out";
     }
     el.style.transition = "none";
-    el.style.transform = `translateX(${dir * 28}px)`;
-    el.style.opacity = "0.15";
+    el.style.transformOrigin = origin;
+    el.style.transform = from;
+    el.style.opacity = opacity;
     void el.offsetWidth; // fuerza el reflujo para que arranque la transición
-    el.style.transition = "transform .3s cubic-bezier(.32,.72,0,1), opacity .22s ease-out";
+    el.style.transition = trans;
     el.style.transform = "";
     el.style.opacity = "";
+    window.setTimeout(() => { if (host.current) host.current.style.transformOrigin = ""; }, 600);
   };
   const springBack = () => {
     const el = host.current;
@@ -301,8 +365,25 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
     el.style.transition = "transform .32s cubic-bezier(.32,.72,0,1)";
     el.style.transform = "";
   };
+  const turnRef = useRef(turn);
+  turnRef.current = turn;
   const next = () => turn(1);
   const prev = () => turn(-1);
+
+  // ---- touchpad: deslizar con dos dedos (o la rueda) pasa de página ----
+  const onWheelTurn = useRef(
+    crearGestoRueda((dir) => void turnRef.current(dir), {
+      activo: () => prefsRef.current.gesto && !prefsRef.current.scroll,
+      vertical: () => true,
+    })
+  ).current;
+
+  useEffect(() => {
+    const el = host.current; // márgenes del escenario; dentro del iframe del libro se escucha desde el hook de contenido
+    if (!el) return;
+    el.addEventListener("wheel", onWheelTurn, { passive: false });
+    return () => el.removeEventListener("wheel", onWheelTurn);
+  }, [onWheelTurn]);
 
   // ---- gestos táctiles: deslizar, tocar bordes, pellizcar ----
   const registerGestures = (r: any) => {
@@ -438,6 +519,8 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
         // Capturar la posición antes de que epub.js procese el enlace. El listener
         // en fase de captura conserva también enlaces #ancla y notas en otro XHTML.
         r.hooks.content.register((contents: any) => {
+          // Las páginas del EPUB viven en un iframe: la rueda hay que escucharla dentro de él
+          contents.document.addEventListener("wheel", onWheelTurn, { passive: false });
           const rememberReference = (event: MouseEvent) => {
             // Los nodos del EPUB viven en un iframe: no usar instanceof Element
             // del documento principal porque los constructores pertenecen a otro realm.
@@ -480,6 +563,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
           }
           queueSave(cfi, p);
           refreshMarkedRef.current();
+          if (prefsRef.current.anim === "hoja" && !prefsRef.current.scroll) getHoja().sincronizar();
           setSel((x) => (x && x.mode === "new" ? null : x));
         });
 
@@ -528,6 +612,9 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
     const r = rendition.current;
     if (r) {
       applyPrefs(r, prefs);
+      // «Hoja de libro»: prepara (o libera) las copias del capítulo que llevan el texto de la hoja
+      if (prefs.anim === "hoja" && !prefs.scroll) getHoja().sincronizar(450);
+      else hojaRef.current?.liberar();
       // Cambio entre páginas y desplazamiento continuo: se recoloca en el mismo punto del libro
       if (scrollAplicado.current !== prefs.scroll) {
         scrollAplicado.current = prefs.scroll;
@@ -657,6 +744,9 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
   return (
     <div className={"reader m-" + prefs.margen + (prefs.scroll ? " modo-scroll" : "")} style={{ ["--rbg" as string]: t.bg, ["--rfg" as string]: t.fg }}>
       <div className="stage" ref={host} />
+      {cintaVista && !prefs.scroll && (
+        <img className={"marcapaginas" + (cintaSale ? " sale" : "")} src={`${import.meta.env.BASE_URL}cintas/${CINTAS.includes(prefs.cinta) ? prefs.cinta : "c01"}.png`} alt="" aria-hidden="true" draggable={false} />
+      )}
       {error && <div className="reader-error">{error}</div>}
 
       <header className={"rbar top" + (chrome ? "" : " hidden")}>
@@ -670,7 +760,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
           </button>
         )}
         <button className={"rbtn bm" + (marked ? " on" : "")} onClick={toggleBookmark} aria-label={marked ? "Quitar marcador" : "Agregar marcador"} aria-pressed={marked}>
-          <AppleIcon name="bookmark" /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
+          <AppleIcon name="bookmark" active={marked} /><span className="reader-mobile-label">{marked ? "★" : "☆"}</span>
         </button>
         <button className="rbtn icon-only" onClick={() => setPanel("search")} aria-label="Buscar en el libro" title="Buscar en el libro"><AppleIcon name="search" /><span className="reader-mobile-label">Buscar</span></button>
         <button className={"rbtn" + (voz ? " on" : "")} onClick={() => (voz ? detenerVoz() : void hablar())} aria-pressed={voz} aria-label="Leer en voz alta" title="Leer en voz alta">{voz ? "Detener" : "Voz"}</button>
@@ -801,6 +891,16 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
               </div>
             </div>
             <div>
+              <h4 className="pop-h">Marcapáginas</h4>
+              <div className="cintas-grid" role="radiogroup" aria-label="Diseño del marcapáginas">
+                {CINTAS.map((c, i) => (
+                  <button key={c} role="radio" aria-checked={prefs.cinta === c} aria-label={`Marcapáginas ${i + 1}`} className={"cinta-op" + (prefs.cinta === c ? " on" : "")} onClick={() => setPrefs((p) => ({ ...p, cinta: c }))}>
+                    <img src={`${import.meta.env.BASE_URL}cintas/${c}.png`} alt="" draggable={false} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
               <h4 className="pop-h">Ancho del texto</h4>
               <div className="row">
                 {MARGENES.map((m) => (
@@ -820,6 +920,20 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
                 ))}
               </div>
             </div>
+            <div>
+              <h4 className="pop-h">Animación de página</h4>
+              <div className="row wrap">
+                {ANIMS.map((a) => (
+                  <button key={a.v} className={prefs.anim === a.v ? "on" : ""} onClick={() => { setPrefs((p) => ({ ...p, anim: a.v })); }}>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <label className="check">
+              <input type="checkbox" checked={prefs.gesto} onChange={(e) => setPrefs((p) => ({ ...p, gesto: e.target.checked }))} />
+              Pasar página con dos dedos en el touchpad
+            </label>
             <label className="check">
               <input type="checkbox" checked={prefs.scroll} onChange={(e) => setPrefs((p) => ({ ...p, scroll: e.target.checked }))} />
               Desplazamiento continuo

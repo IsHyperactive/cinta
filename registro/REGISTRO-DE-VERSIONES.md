@@ -2,8 +2,9 @@
 
 | Versión | Fecha | Resumen | Verificada en ejecución |
 |---|---|---|---|
-| 0.6.2 | 2026-11-14 | La búsqueda de la biblioteca ya no se aplasta ni cae bajo la barra lateral en ventanas estrechas; entrega de 9 archivos con Cinta portable en Windows (x64/ARM64) y deb/rpm/AppImage en Linux | Sí en Linux (DOM real a 480–1300 px, WebKitGTK y app Tauri por AT-SPI); Windows/ARM64 pendientes en ejecución, pero CI compiló y publicó los 9 archivos |
-| 0.6.1 | 2026-11-14 | Temas de color (Automático, Claro, Oscuro, Sepia guinda, Medianoche) y fondo personalizado con colores adaptativos; hoja «Apariencia» | No (sin red para compilar; probado en Chromium y con pruebas de contraste) |
+| 0.7.0 (principal) | 2026-11-14 | Versión principal: animación «Hoja de libro», marcapáginas con 16 diseños de cinta, gestos de touchpad y archivos externos que recuerdan posición, marcadores y notas. Sustituye a 0.6.1 y 0.6.2 | Pendiente en la app real con EPUB (animación y marcapáginas probados solo en maqueta); compilación y 9 archivos verificados por CI |
+| 0.6.2 | 2026-11-14 | **Eliminada** por fallos; sustituida por la 0.7.0. La búsqueda de la biblioteca ya no se aplastaba ni caía bajo la barra lateral; entregaba 9 archivos con Cinta portable en Windows y deb/rpm/AppImage en Linux | CI compiló y publicó los 9 archivos, pero la versión está descontinuada |
+| 0.6.1 | 2026-11-14 | **Eliminada** por fallos; sustituida por la 0.7.0. Temas de color (Automático, Claro, Oscuro, Sepia guinda, Medianoche) y fondo personalizado con colores adaptativos; hoja «Apariencia» | No (sin red para compilar; probado en Chromium y con pruebas de contraste); versión descontinuada |
 | 0.6.0 | 2026-11-13 | Series, tiempo de lectura en SQLite, voz, desplazamiento continuo, ancho del texto, copiar cita | No (sin red para compilar) |
 | 0.5.4 | 2026-11-13 | Marcar como terminado / no leído desde el menú del libro | No (sin red para compilar) |
 | 0.5.3 | 2026-11-13 | Saltar al pasaje desde «Notas»; filtro «Leyendo» | No (sin red para compilar) |
