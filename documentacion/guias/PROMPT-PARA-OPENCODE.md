@@ -35,12 +35,12 @@ Haz exactamente esto, en orden, y detente y avísame si algo falla:
 ```
 
 ## Qué deberías ver al final en GitHub → Releases → v0.6.0
-- Windows: `Cinta-Setup-x64.exe`, `Cinta-Setup-x64.msi`, `Cinta-portable-x64.exe`, y los mismos tres con `ARM64`
-- Linux x64: `Cinta-linux-x64.deb` (Debian/Ubuntu), `.rpm` (Fedora/openSUSE), `.AppImage`, `-portable.tar.gz`
-- Linux ARM64: los mismos cuatro con `arm64`
+- Windows: `Cinta-portable-x64.exe` y `Cinta-portable-ARM64.exe`
+- Linux x64: `Cinta-linux-x64.deb` (Debian/Ubuntu), `.rpm` (Fedora/openSUSE) y `.AppImage` (universal)
+- Linux ARM64: los mismos tres con `arm64`
 - `SHA256SUMS.txt`
 
-En total son 14 binarios más `SHA256SUMS.txt`; ese conjunto no cambia entre versiones (solo cambia la versión dentro de cada archivo).
+En total son 9 archivos (8 binarios más `SHA256SUMS.txt`); ese conjunto no cambia entre versiones (solo cambia la versión dentro de cada archivo).
 
 ## Si falla algo
 Pásame el mensaje de error de la pestaña **Actions** (o lo que te diga OpenCode) y lo corrijo en la siguiente versión.

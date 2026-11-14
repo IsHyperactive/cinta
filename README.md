@@ -23,22 +23,17 @@ Esto es lo que hay hoy.
 
 Elige el archivo que corresponda a tu equipo. Todos salen de la [última versión publicada](https://github.com/IsHyperactive/cinta/releases/latest).
 
-| Plataforma | Sin instalar | Instalador | Paquete adicional |
-| :--- | :--- | :--- | :--- |
-| **Windows x64** (Intel/AMD) | [Cinta-portable-x64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-portable-x64.exe) | [Cinta-Setup-x64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-Setup-x64.exe) | [Cinta-Setup-x64.msi](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-Setup-x64.msi) |
-| **Windows ARM64** | [Cinta-portable-ARM64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-portable-ARM64.exe) | [Cinta-Setup-ARM64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-Setup-ARM64.exe) | [Cinta-Setup-ARM64.msi](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-Setup-ARM64.msi) |
-| **Linux x64** | [AppImage](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.AppImage) · [portable .tar.gz](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64-portable.tar.gz) | [Cinta-linux-x64.deb](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.deb) (Debian/Ubuntu) | [Cinta-linux-x64.rpm](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.rpm) (Fedora/openSUSE) |
-| **Linux ARM64** | [AppImage](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.AppImage) · [portable .tar.gz](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64-portable.tar.gz) | [Cinta-linux-arm64.deb](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.deb) (Debian/Ubuntu) | [Cinta-linux-arm64.rpm](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.rpm) (Fedora/openSUSE) |
+| Plataforma | Descarga |
+| :--- | :--- |
+| **Windows x64** (Intel/AMD) | [Cinta-portable-x64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-portable-x64.exe) |
+| **Windows ARM64** | [Cinta-portable-ARM64.exe](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-portable-ARM64.exe) |
+| **Linux x64** | [.deb](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.deb) · [.rpm](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.rpm) · [AppImage](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-x64.AppImage) |
+| **Linux ARM64** | [.deb](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.deb) · [.rpm](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.rpm) · [AppImage](https://github.com/IsHyperactive/cinta/releases/latest/download/Cinta-linux-arm64.AppImage) |
 
 ### ¿Cuál me conviene?
 
-- **Portable (EXE):** no se instala. Lo guardas donde quieras y lo abres. La biblioteca queda en `CintaData`, junto al `.exe`, así que puedes llevarla en un USB. Es la forma natural de usar Cinta en Windows.
-- **Instalador (Setup .exe):** crea los accesos directos y deja Cinta como una aplicación más del sistema. En Windows 11 ya viene WebView2; si falta, el instalador lo descarga.
-- **MSI:** el instalador clásico de Windows, pensado para equipos de empresa o para quien prefiere ese formato.
-- **AppImage:** no se instala. Le das permiso de ejecución (`chmod +x`) y lo abres.
-- **Portable Linux (.tar.gz):** el binario y un lanzador, sin instalación. Necesita WebKitGTK 4.1 en el sistema.
-- **DEB:** para Debian y Ubuntu, con tu gestor de paquetes de siempre.
-- **RPM:** para Fedora y openSUSE.
+- **Windows:** Cinta es portable. Descarga el `.exe` de tu arquitectura, guárdalo donde quieras y ábrelo. No se instala: la biblioteca queda en `CintaData`, junto al `.exe`, así que puedes llevarla en un USB. En Windows 11 ya viene WebView2; si falta, Windows lo descarga al abrir la app.
+- **Linux:** usa el `.deb` si estás en Debian o Ubuntu, el `.rpm` si estás en Fedora u openSUSE, y el AppImage si prefieres no instalar nada. Le das permiso de ejecución (`chmod +x`) y lo abres.
 
 En Linux hace falta WebKitGTK 4.1 (`libwebkit2gtk-4.1-0` en Debian/Ubuntu).
 
@@ -52,10 +47,10 @@ sudo apt install ./Cinta-linux-x64.deb
 
 ## Lo nuevo en la 0.6.2
 
-Esta versión arregla la búsqueda y devuelve la entrega completa.
+Esta versión arregla la búsqueda y deja la entrega en 9 archivos: Windows portable y tres formatos de Linux por arquitectura.
 
 - **La búsqueda ya no se aplasta.** Conserva su ancho (hasta 390 px) y, si los controles no caben, la barra superior los pasa a otra fila. La barra lateral se queda a la izquierda en todas las ventanas de escritorio.
-- **Volvieron los portables.** Cada release publica siempre los mismos 14 archivos: instalador, MSI y `.exe` portable para Windows x64 y ARM64; `.deb`, `.rpm`, AppImage y `.tar.gz` portable para Linux x64 y ARM64, más `SHA256SUMS.txt`.
+- **Volvieron los portables.** Cada release publica siempre los mismos 9 archivos: `Cinta-portable-x64.exe` y `Cinta-portable-ARM64.exe`; `.deb`, `.rpm` y AppImage para Linux x64 y ARM64; y `SHA256SUMS.txt`. En Windows no hay instaladores: Cinta es portable.
 - Si vienes de la 0.6.1, esta versión también incluye los **temas de color** y el **fondo personalizado**.
 
 Y si vienes de más atrás, la 0.6.0 trajo las **series**, el **tiempo de lectura**, la **voz** en EPUB, el **desplazamiento continuo**, el **ancho del texto** y los botones de **copiar cita** y **buscar** al seleccionar.

@@ -50,8 +50,8 @@ GitHub ya tiene un workflow listo para compilar Cinta cada vez que subes cambios
 4. **Ve a la pestaña Actions** y haz clic en "Compilar Cinta". También se inicia solo al hacer push o abrir un pull request.
 
 El workflow primero verifica que el código TypeScript esté correcto, y después compila en paralelo para:
-- **Linux:** paquetes `.deb`, `.rpm`, AppImage y portable `.tar.gz`.
-- **Windows:** instaladores NSIS, MSI y portable `.exe` para x64 y ARM64.
+- **Linux:** paquetes `.deb`, `.rpm` y AppImage.
+- **Windows:** un `.exe` portable para x64 y ARM64 (sin instalador).
 
 Cuando los trabajos terminen, abre la ejecución en **Actions → Artifacts** y descarga los paquetes para tu sistema.
 
@@ -59,12 +59,10 @@ Cuando los trabajos terminen, abre la ejecución en **Actions → Artifacts** y 
 
 ## ¿Cómo obtengo el ejecutable para Windows?
 
-Después de subir los cambios a la rama principal, el workflow de GitHub compilará automáticamente los instaladores para Windows. Puedes descargarlos en la sección de **Releases** del repositorio.
+Después de subir los cambios a la rama principal, el workflow de GitHub compilará automáticamente los ejecutables portables para Windows. Puedes descargarlos en la sección de **Releases** del repositorio.
 
-Dentro de cada paquete de Windows encontrarás:
-- **Ejecutable portable:** no se instala. Lo guardas donde quieras y lo ejecutas.
-- **Instalador NSIS:** el instalador tradicional que crea accesos directos.
-- **Paquete MSI:** instalador de Windows para entornos profesionales.
+En Windows encontrarás un único archivo por arquitectura:
+- **Ejecutable portable:** no se instala. Lo guardas donde quieras y lo ejecutas; la biblioteca queda en `CintaData`, junto al `.exe`.
 
 Los artefactos se conservan durante 30 días en la plataforma de GitHub Actions.
 
