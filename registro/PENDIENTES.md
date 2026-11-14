@@ -1,6 +1,6 @@
 # Pendientes de Cinta (hoja de ruta para quien continúe)
 
-Última actualización: 0.6.1 (2026-11-14). Actualízala en cada versión: tacha lo hecho (`[x]`) y añade lo nuevo.
+Última actualización: 0.6.2 (2026-11-14). Actualízala en cada versión: tacha lo hecho (`[x]`) y añade lo nuevo.
 
 ## Contexto del usuario (importante)
 - Quiere que Cinta imite Apple Books con archivos locales, en Windows x64/ARM64 (y Linux).
@@ -34,10 +34,12 @@ Comprobar primero qué existe ya (README y `App.tsx`); lo siguiente es lo típic
 - [ ] Sistema de diseño único: variables CSS de color/tipografía/espaciado en `aplicacion/src/estilos/` (hoy `styles.css` tiene ~1550 líneas con varias «pasadas» apiladas; consolidar y dividir por componente).
 - [x] Temas de color: Automático, Claro, Oscuro, Sepia guinda, Medianoche (0.6.1; `estilos/temas.css`).
 - [x] Fondo personalizado con colores adaptativos y hoja «Apariencia» (0.6.1; por probar en la app real).
+- [x] **Búsqueda en ventanas estrechas** (0.6.2): conserva su ancho (hasta 390 px) en vez de encogerse; si los controles no caben, la barra superior los pasa a otra fila. La barra lateral se queda a la izquierda desde 480 px; el diseño móvil empieza por debajo.
 - [ ] Revisar portadas, barra lateral, tarjetas y barras de lectura con los temas nuevos; aislar los paneles del lector de las variables del tema de la app.
-- [ ] Respetar reglas táctiles (objetivos ≥ 44 px, ≤ 820 px barra arriba).
+- [ ] Respetar reglas táctiles (objetivos ≥ 44 px, barra arriba por debajo de 480 px).
 
 ## Deuda técnica / verificación
+- [ ] 0.6.2: probar la ventana estrecha (480–1040 px) en Windows/WebView2 y en ARM64; el CSS es el mismo, pero no se compiló para esas plataformas aquí.
 - [ ] 0.6.1: probar en la app real el fondo (diálogo de archivos, `save_background` con cuerpo binario, reinicio, copia de seguridad/restauración con `Fondos`) y fotos reales clara/oscura/colorida; `cargo check --locked` de los 4 comandos nuevos.
 - [ ] Ejecutar `npm ci`, `npm run typecheck`, `npm run build` y CI tras la reorganización de 0.4.5.
 - [ ] Probar en Windows ARM64 (Surface Pro X) y con EPUB reales con notas al pie.

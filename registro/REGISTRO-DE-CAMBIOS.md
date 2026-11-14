@@ -7,6 +7,23 @@ Antes de empezar, lee `PENDIENTES.md`: ahí está lo siguiente que toca.
 
 ---
 
+## [0.6.2] · 2026-11-14 · La búsqueda de la biblioteca ya no se aplasta ni cae bajo la barra lateral
+**Estado de verificación:** `npm run typecheck` y `npm run build` en verde; `verificar-release.mjs` en verde. Medido en el DOM real (Firefox WebDriver BiDi) a 1300, 1100, 1041, 1040, 1000, 950, 900, 850, 821, 820, 760, 700, 640, 626, 600, 500 y 480 px, tanto en Inicio como en «Libros» con el selector de orden y el conmutador de vista visibles: en todos, la barra lateral sigue a la izquierda y la búsqueda queda dentro de la barra superior con su ancho completo (390 px, o todo el ancho disponible si la ventana es más estrecha), sin encogerse. También en WebKitGTK (el motor que usa la app en Linux) a 1366 px y en la app Tauri real por AT-SPI (búsqueda en la fila superior). En móvil real (≤ 479 px) se conserva el diseño anterior con la barra arriba.
+
+### Añadido
+- (nada nuevo)
+
+### Cambiado
+- **La búsqueda conserva su ancho:** ocupa hasta 390 px (o todo el ancho disponible en ventanas más estrechas) y ya no se encoge para hacer sitio. Cuando el selector de orden, el conmutador de vista y los botones de acción no caben en la misma fila, la barra superior los pasa a la fila siguiente en lugar de comprimir la búsqueda. Funciona con cualquier ancho de texto, así que también cubre Windows y ARM64.
+- **Corte del diseño móvil:** la barra lateral pasa arriba solo por debajo de 480 px, en lugar de 820 px. Cinta es una app de escritorio y su ventana mínima es 640 px, así que entre 480 y 820 px manda el diseño de escritorio con el panel a la izquierda.
+
+### Corregido
+- **La búsqueda aparecía debajo del panel lateral** al estrechar la ventana por debajo de 821 px; ahora el panel se queda a la izquierda y la búsqueda permanece en la barra superior.
+
+### Falta por hacer
+- Probar a mano la ventana estrecha en Windows (WebView2) y en Windows/Linux ARM64; el CSS es el mismo, pero no se compiló aquí para esas plataformas.
+- Revisar si el corte de 479 px debe acompañarse de una revisión táctil (objetivos ≥ 44 px) cuando la barra pasa arriba.
+
 ## [0.6.1] · 2026-11-14 · Parte 3a: temas de color y fondo personalizado adaptativo
 **Estado de verificación:** sin compilar (sin red: no hay `node_modules` ni crates). **Hecho aquí:** (1) `verificar-release.mjs` en verde; (2) `herramientas/verificacion/probar-fondo.mjs` (nuevo): 11 imágenes sintéticas × 3 atenuaciones, contraste medido con una implementación independiente: todo correcto; (3) en Chromium real con los CSS reales (`styles.css` + `temas.css`): «Automático» da capturas **idénticas píxel a píxel** a la 0.6.0 (con y sin `temas.css`, 1100 y 600 px, claro y oscuro del sistema), cada tema gana sobre el bloque de escritorio y sobre `prefers-color-scheme`, y con fondo clara/oscura/colorida el peor 5 % de píxeles detrás de cada texto queda ≥ 4,5:1 (medido sobre capturas, no calculado); (4) `tsc` sobre `fondo.ts`, `temas.ts`, `Apariencia.tsx`, `AppleIcon.tsx` y `main.tsx` con tipos simulados de React/Tauri/Phosphor: sin errores en esos archivos; (5) EPUB de la guía regenerado y validado (zip, XML, `mimetype` sin comprimir). **No verificado:** `npm ci`, `npm run typecheck` y `npm run build` reales, `cargo check --locked` (los 4 comandos Rust nuevos están revisados a mano, no compilados), y nada dentro de la app Tauri real (selector de archivos, `get_background`/`save_background` con datos binarios, WebView2). **Correr primero:** `npm ci && npm run typecheck && npm run build` y `cargo check --locked`. Lo más probable que falle: la firma de `save_background` (`tauri::ipc::Request` + `InvokeBody::Raw`) y los tipos de `@types/react` en `Apariencia.tsx`.
 
