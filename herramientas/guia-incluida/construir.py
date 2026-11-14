@@ -47,6 +47,7 @@ table{width:100%;border-collapse:collapse;margin:.6em 0 1.3em;font-size:.95em}
 th{text-align:left;font-size:.8em;letter-spacing:.06em;text-transform:uppercase;opacity:.75;padding:.45em .6em;border-bottom:2px solid #d9560b}
 td{padding:.55em .6em;border-bottom:1px solid rgba(128,128,128,.3);vertical-align:top}
 tr{break-inside:avoid}
+ol.indice{break-inside:avoid}
 ol.pasos{list-style:none;counter-reset:p;padding:0;margin:1em 0 1.4em}
 ol.pasos li{counter-increment:p;position:relative;padding:.1em 0 0 2.9em;margin:0 0 1.1em;min-height:2.1em;break-inside:avoid}
 ol.pasos li::before{content:counter(p);position:absolute;left:0;top:.05em;width:2em;height:2em;border-radius:50%;background:#d9560b;color:#fff;text-align:center;line-height:2em;font-weight:700}
@@ -110,7 +111,7 @@ CH.append(("bienvenida", "Bienvenido a Cinta", page(
     "<li>Pulsa <span class=\"btn\">Contenido</span> para saltar a cualquier capítulo.</li></ul>"
     + tip("Cada capítulo se entiende por sí solo. Si buscas algo concreto, usa <b>Buscar</b> o abre <b>Contenido</b>.")
     + "<h2>Qué encontrarás</h2>"
-    "<ol><li><b>Empieza en un minuto</b>: lo mínimo para leer ya.</li>"
+    "<ol class=\"indice\"><li><b>Empieza en un minuto</b>: lo mínimo para leer ya.</li>"
     "<li><b>Tu biblioteca</b>: secciones, estantes, colecciones y menús.</li>"
     "<li><b>Agregar libros</b>: cómo entran y qué pasa con tus archivos.</li>"
     "<li><b>Formatos compatibles</b>: qué abre Cinta y cómo.</li>"
@@ -182,7 +183,7 @@ CH.append(("biblioteca", "Tu biblioteca", page(
     "<ol class=\"pasos\">"
     "<li><b>Elige una imagen</b>Pulsa <span class=\"btn\">Elegir imagen…</span> y busca un archivo jpg, png o webp. Cinta la reduce (hasta 1920 px por el lado mayor) y guarda una copia ligera en la carpeta <code>Fondos</code> de <code>CintaData</code>. Tu archivo original no se toca.</li>"
     "<li><b>Deja que Cinta adapte los colores</b>Analiza la foto en tu propio equipo, sin internet, y decide si el texto va claro u oscuro y qué color de acento usar. Los paneles (barra lateral, barras, hojas y menús) quedan semitransparentes y con desenfoque para que todo se lea.</li>"
-    "<li><b>Ajusta a tu gusto</b>Con <b>Atenuación</b> oscureces (o aclaras) la imagen y con <b>Desenfoque</b> difuminas lo que hay detrás de los paneles. La vista previa te muestra el resultado al instante.</li>"
+    "<li><b>Ajusta a tu gusto</b>Con <b>Atenuación</b> oscureces (o aclaras) la imagen y con <b>Desenfoque de la imagen</b> difuminas la propia foto (los paneles siempre llevan su cristal esmerilado). La vista previa te muestra el resultado al instante.</li>"
     "</ol>"
     + note("La atenuación nunca baja del mínimo con el que el texto se lee bien sobre tu imagen. Si intentas ir por debajo, Cinta lo mantiene y te lo avisa. Pulsa <span class=\"btn\">Quitar fondo</span> para volver al tema anterior.")
     + "<p>El fondo se ve en la biblioteca: Inicio, listas, Notas, hojas y menús. Los lectores (EPUB, PDF, cómics, texto y audiolibros) no usan la imagen y conservan sus propios temas, y las portadas no cambian. Si activas «Reducir transparencia» en tu sistema, los paneles se ven opacos y sin desenfoque. Si la imagen se borra o se daña, Cinta vuelve sola al tema anterior, sin errores.</p>"

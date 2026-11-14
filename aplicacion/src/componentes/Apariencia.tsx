@@ -100,7 +100,7 @@ export default function Apariencia({ onClose }: { onClose: () => void }) {
         </label>
         {t.hayFondo && <p className="muted ap-min">Mínimo para que el texto se lea con esta imagen: {minimo} %.</p>}
         <label className="ap-ctl">
-          <span>Desenfoque <b>{Math.round(t.desenfoque)} px</b></span>
+          <span>Desenfoque de la imagen <b>{Math.round(t.desenfoque)} px</b></span>
           <input
             type="range" min={0} max={24} step={1} value={Math.round(t.desenfoque)} disabled={!t.hayFondo}
             onChange={(e) => ajustarFondo({ desenfoque: Number(e.target.value) })}

@@ -21,7 +21,7 @@ Esto es lo que hay hoy.
 
 ## Descargar
 
-Elige el archivo que corresponda a tu equipo. Todos salen de la [última versión publicada](https://github.com/IsHyperactive/cinta/releases/latest).
+Elige el archivo que corresponda a tu equipo. Todos salen de la [única versión publicada: la 0.7.2](https://github.com/IsHyperactive/cinta/releases/latest).
 
 | Plataforma | Descarga |
 | :--- | :--- |
@@ -45,17 +45,30 @@ chmod +x Cinta-linux-x64.AppImage
 sudo apt install ./Cinta-linux-x64.deb
 ```
 
-## Lo nuevo en la 0.7.0
+## La única versión publicada: 0.7.2
 
-Esta es la versión principal: sustituye a la 0.6.1 y la 0.6.2, que quedaron descontinuadas por sus fallos.
+La **0.7.2** sustituye a la **0.7.0** y a la **0.7.1**, que quedaron descontinuadas por sus fallos y ya no se publican. Esta es la versión que hay que descargar.
 
-- **«Hoja de libro».** El lector EPUB puede pasar de página como un libro de papel: la hoja gira sobre el lomo, se oscurece al girar y deja una sombra sobre la página siguiente. Se elige en «Aa» → Animación.
-- **Marcapáginas con cinta.** Al marcar una página, una cinta cuelga del centro del libro. Hay 16 diseños para elegir en «Aa» y se recuerda el que elijas.
-- **Los archivos abiertos sin agregar lo recuerdan todo.** Posición, porcentaje, marcadores, resaltados, notas y trazos. Si después agregas el libro a la biblioteca, todo pasa con él.
-- **Gestos de touchpad.** Un deslizamiento de dos dedos pasa una sola página, sin saltos por la inercia. Funciona en EPUB, PDF y cómics.
-- **La entrega sigue en 9 archivos:** `Cinta-portable-x64.exe`, `Cinta-portable-ARM64.exe`, `.deb`, `.rpm` y AppImage para Linux x64 y ARM64, más `SHA256SUMS.txt`. Sin instaladores ni formatos extra.
+- **El Desenfoque del fondo ya funciona de verdad.** El deslizador difumina la propia imagen del fondo (antes solo difuminaba el cristal de los paneles) y sigue actuando al mover la atenuación. La etiqueta ahora dice «Desenfoque de la imagen».
+- **La entrega sigue en 9 archivos exactos:** `Cinta-portable-x64.exe`, `Cinta-portable-ARM64.exe`, `.deb`, `.rpm` y AppImage para Linux x64 y ARM64, más `SHA256SUMS.txt`. Sin instaladores ni formatos extra.
+- **Se mantiene todo lo bueno de la 0.7.1:** no hay animación «Hoja de libro» (se retiró porque no igualaba el pase de página de Apple Books) y la guía incluida conserva la lista «Qué encontrarás» en una sola página.
+- **Se mantiene todo lo bueno de la 0.7.0:** libro a doble página con el lomo en el centro, fuentes a la vista en el panel «Aa» y marcapáginas vectoriales (SVG), más grandes y con recortes nítidos.
 
-La 0.7.0 también incluye los **temas de color**, el **fondo personalizado**, la **búsqueda que no se aplasta** y, si vienes de más atrás, las **series**, el **tiempo de lectura**, la **voz** en EPUB, el **desplazamiento continuo**, el **ancho del texto** y los botones de **copiar cita** y **buscar** al seleccionar.
+### Por qué ya no están la 0.7.0 y la 0.7.1
+
+- La **0.7.0** traía la animación «Hoja de libro», pero la hoja era rígida, giraba plana, se salía del borde y mostraba un reverso gris: no estaba a la altura. Además, el deslizador de desenfoque no difuminaba la imagen.
+- La **0.7.1** quitó esa animación y arregló la guía, pero seguía arrastrando el fallo del desenfoque: el control solo afectaba a los paneles y parecía dejar de funcionar con la atenuación alta.
+- La **0.7.2** reúne lo bueno de ambas y corrige el desenfoque. Por eso sus releases y etiquetas anteriores se eliminaron: **la única versión publicada es la 0.7.2**.
+
+## Antes, en la 0.6.2
+
+Esta versión arregla la búsqueda y deja la entrega en 9 archivos: Windows portable y tres formatos de Linux por arquitectura.
+
+- **La búsqueda ya no se aplasta.** Conserva su ancho (hasta 390 px) y, si los controles no caben, la barra superior los pasa a otra fila. La barra lateral se queda a la izquierda en todas las ventanas de escritorio.
+- **Volvieron los portables.** Cada release publica siempre los mismos 9 archivos: `Cinta-portable-x64.exe` y `Cinta-portable-ARM64.exe`; `.deb`, `.rpm` y AppImage para Linux x64 y ARM64; y `SHA256SUMS.txt`. En Windows no hay instaladores: Cinta es portable.
+- Si vienes de la 0.6.1, esta versión también incluye los **temas de color** y el **fondo personalizado**.
+
+Y si vienes de más atrás, la 0.6.0 trajo las **series**, el **tiempo de lectura**, la **voz** en EPUB, el **desplazamiento continuo**, el **ancho del texto** y los botones de **copiar cita** y **buscar** al seleccionar.
 
 ## Lo que puedes hacer
 

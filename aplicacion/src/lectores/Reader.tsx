@@ -4,14 +4,13 @@ import ePub from "epubjs";
 import NoteDialog from "../componentes/NoteDialog";
 import AppleIcon from "../componentes/AppleIcon";
 import { HL_COLORS, reduceMotion, type Ann } from "../utilidades/annot";
-import { crearHoja, type Hoja } from "../utilidades/hoja";
 import { crearGestoRueda } from "../utilidades/gestos";
 
 type ReaderBook = { id: number; title: string; path?: string; progressCfi: string | null };
 type TocItem = { label: string; href: string; depth: number };
 type ThemeId = "claro" | "sepia" | "gris" | "oscuro";
 type Margen = "estrecho" | "normal" | "ancho";
-type Anim = "ninguna" | "deslizar" | "desvanecer" | "zoom" | "voltear" | "cubo" | "hoja";
+type Anim = "ninguna" | "deslizar" | "desvanecer" | "zoom" | "voltear" | "cubo";
 type Prefs = { theme: ThemeId; size: number; font: string; line: number; justify: boolean; scroll: boolean; margen: Margen; rate: number; anim: Anim; gesto: boolean; cinta: string };
 type Hit = { cfi: string; excerpt: string };
 type Sel = { mode: "new"; cfiRange: string; text: string } | { mode: "edit"; id: number };
@@ -23,7 +22,20 @@ const THEMES: Record<ThemeId, { bg: string; fg: string; label: string }> = {
   gris: { bg: "#d9dadd", fg: "#25272c", label: "Gris" },
   oscuro: { bg: "#121316", fg: "#d8dbe2", label: "Oscuro" },
 };
-const FONTS = ["Georgia", "Cambria", "Palatino Linotype", "Segoe UI", "Verdana"];
+// Fuentes del lector. «Original» respeta la tipografía del propio libro; el resto la sustituye. Cada una lleva una pila de
+// respaldo para que en Linux y macOS (donde no existen las de Windows) se vea una equivalente y no la fuente por defecto.
+const FONTS: { v: string; label: string; css: string }[] = [
+  { v: "", label: "Original del libro", css: "inherit" },
+  { v: "Georgia", label: "Georgia", css: "Georgia, 'DejaVu Serif', serif" },
+  { v: "Cambria", label: "Cambria", css: "Cambria, 'Noto Serif', Georgia, serif" },
+  { v: "Palatino Linotype", label: "Palatino", css: "'Palatino Linotype', Palatino, 'Book Antiqua', 'URW Palladio L', serif" },
+  { v: "Times New Roman", label: "Times New Roman", css: "'Times New Roman', Times, 'Liberation Serif', serif" },
+  { v: "Constantia", label: "Constantia", css: "Constantia, 'Noto Serif', Georgia, serif" },
+  { v: "Segoe UI", label: "Segoe UI", css: "'Segoe UI', system-ui, 'Noto Sans', sans-serif" },
+  { v: "Verdana", label: "Verdana", css: "Verdana, 'DejaVu Sans', sans-serif" },
+  { v: "Arial", label: "Arial", css: "Arial, Helvetica, 'Liberation Sans', sans-serif" },
+  { v: "Consolas", label: "Consolas", css: "Consolas, 'DejaVu Sans Mono', monospace" },
+];
 // line = 0 respeta el interlineado original del libro
 const LINES = [
   { v: 0, label: "Original" },
@@ -31,6 +43,8 @@ const LINES = [
   { v: 1.6, label: "Normal" },
   { v: 2, label: "Amplio" },
 ];
+/** Ancho mínimo del escenario para mostrar dos páginas con el lomo en el centro (mismo umbral que se le da a epub.js). */
+const MIN_DOBLE = 800;
 const DEFAULT_PREFS: Prefs = { theme: "claro", size: 100, font: "Georgia", line: 0, justify: false, scroll: false, margen: "normal", rate: 1, anim: "deslizar", gesto: true, cinta: "c01" };
 const ANIMS: { v: Anim; label: string }[] = [
   { v: "ninguna", label: "Ninguna" },
@@ -39,7 +53,6 @@ const ANIMS: { v: Anim; label: string }[] = [
   { v: "zoom", label: "Zoom" },
   { v: "voltear", label: "Voltear" },
   { v: "cubo", label: "Cubo" },
-  { v: "hoja", label: "Hoja de libro" },
 ];
 const CINTAS = Array.from({ length: 16 }, (_, i) => `c${String(i + 1).padStart(2, "0")}`);
 const MARGENES: { v: Margen; label: string }[] = [
@@ -61,7 +74,10 @@ const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
 
 function loadPrefs(): Prefs {
   try {
-    return { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem("cinta.reader") || "{}") };
+    const p: Prefs = { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem("cinta.reader") || "{}") };
+    // «Hoja de libro» se retiró en 0.7.1: quien la tenía elegida pasa a la animación por defecto
+    if (!ANIMS.some((a) => a.v === p.anim)) p.anim = DEFAULT_PREFS.anim;
+    return p;
   } catch {
     return DEFAULT_PREFS;
   }
@@ -91,7 +107,8 @@ function applyPrefs(r: any, p: Prefs) {
   });
   r.themes.select("cinta");
   r.themes.fontSize(`${p.size}%`);
-  r.themes.font(p.font);
+  if (p.font) r.themes.font(p.font);
+  else { try { r.themes.removeOverride("font-family"); } catch { /* sin override que quitar */ } }
 }
 
 export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onClose: () => void; onAdd?: () => void }) {
@@ -114,6 +131,16 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
   const [ready, setReady] = useState(false);
   const [chapter, setChapter] = useState("");
   const [error, setError] = useState("");
+  // Ancho del escenario: decide si el libro se ve a doble página (lomo en el centro, como un libro abierto)
+  const [ancho, setAncho] = useState(0);
+  useEffect(() => {
+    const el = host.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setAncho(el.clientWidth));
+    ro.observe(el);
+    setAncho(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
 
   // ---- Fase 5: marcadores y resaltados ----
   const annKey = book.id < 0 ? `p:${book.path}` : `b:${book.id}`;
@@ -295,19 +322,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
       document.removeEventListener("visibilitychange", hidden);
     };
   }, [flush]);
-  const hojaRef = useRef<Hoja | null>(null);
-  const getHoja = () =>
-    (hojaRef.current ??= crearHoja({
-      host: host.current!,
-      activo: () => prefsRef.current.anim === "hoja" && !prefsRef.current.scroll,
-      firma: () => {
-        const p = prefsRef.current;
-        const h = host.current;
-        return [p.theme, p.size, p.font, p.line, p.justify, p.margen, h?.clientWidth, h?.clientHeight].join("|");
-      },
-    }));
-  useEffect(() => () => { hojaRef.current?.destruir(); hojaRef.current = null; }, []);
-  /** Pasa de página con la animación elegida en los ajustes (Deslizar, Desvanecer, Zoom, Voltear, Cubo, Hoja de libro o ninguna). */
+  /** Pasa de página con la animación elegida en los ajustes (Deslizar, Desvanecer, Zoom, Voltear, Cubo o ninguna). */
   const turn = async (dir: 1 | -1) => {
     const r = rendition.current;
     const el = host.current;
@@ -319,15 +334,8 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
         /* sin más páginas */
       }
     };
-    // «Hoja de libro»: la hoja gira sobre el lomo (ver utilidades/hoja.ts). Si aún no está lista (p. ej. recién abierto el libro)
-    // devuelve false sin haber cambiado de página y este giro se hace con «Voltear».
-    if (el && prefsRef.current.anim === "hoja" && !prefsRef.current.scroll && !reduceMotion()) {
-      el.style.transition = "none";
-      el.style.transform = ""; // por si venía de arrastrar la página con el dedo
-      if (await getHoja().pasar(dir, cambiar)) return;
-    }
     await cambiar();
-    const anim = prefsRef.current.anim === "hoja" ? (prefsRef.current.scroll ? "ninguna" : "voltear") : prefsRef.current.anim;
+    const anim = prefsRef.current.anim;
     const limpiar = () => { if (el) { el.style.transition = ""; el.style.transform = ""; el.style.opacity = ""; el.style.transformOrigin = ""; } };
     if (!el || anim === "ninguna" || reduceMotion()) return limpiar();
     // Estado inicial de cada animación (la página nueva ya está puesta; se «llega» desde aquí hasta la posición normal)
@@ -513,6 +521,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
           height: "100%",
           flow: prefsRef.current.scroll ? "scrolled-doc" : "paginated",
           spread: prefsRef.current.scroll ? "none" : "auto",
+          minSpreadWidth: MIN_DOBLE, // desde este ancho se ven dos páginas con el lomo en el centro
         });
         rendition.current = r;
 
@@ -563,7 +572,6 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
           }
           queueSave(cfi, p);
           refreshMarkedRef.current();
-          if (prefsRef.current.anim === "hoja" && !prefsRef.current.scroll) getHoja().sincronizar();
           setSel((x) => (x && x.mode === "new" ? null : x));
         });
 
@@ -612,9 +620,6 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
     const r = rendition.current;
     if (r) {
       applyPrefs(r, prefs);
-      // «Hoja de libro»: prepara (o libera) las copias del capítulo que llevan el texto de la hoja
-      if (prefs.anim === "hoja" && !prefs.scroll) getHoja().sincronizar(450);
-      else hojaRef.current?.liberar();
       // Cambio entre páginas y desplazamiento continuo: se recoloca en el mismo punto del libro
       if (scrollAplicado.current !== prefs.scroll) {
         scrollAplicado.current = prefs.scroll;
@@ -742,10 +747,10 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
 
   const t = THEMES[prefs.theme] ?? THEMES.claro;
   return (
-    <div className={"reader m-" + prefs.margen + (prefs.scroll ? " modo-scroll" : "")} style={{ ["--rbg" as string]: t.bg, ["--rfg" as string]: t.fg }}>
+    <div className={"reader m-" + prefs.margen + (prefs.scroll ? " modo-scroll" : "") + (!prefs.scroll && ancho >= MIN_DOBLE ? " doble" : "")} style={{ ["--rbg" as string]: t.bg, ["--rfg" as string]: t.fg }}>
       <div className="stage" ref={host} />
       {cintaVista && !prefs.scroll && (
-        <img className={"marcapaginas" + (cintaSale ? " sale" : "")} src={`${import.meta.env.BASE_URL}cintas/${CINTAS.includes(prefs.cinta) ? prefs.cinta : "c01"}.png`} alt="" aria-hidden="true" draggable={false} />
+        <img className={"marcapaginas" + (cintaSale ? " sale" : "")} src={`${import.meta.env.BASE_URL}cintas/${CINTAS.includes(prefs.cinta) ? prefs.cinta : "c01"}.svg`} alt="" aria-hidden="true" draggable={false} />
       )}
       {error && <div className="reader-error">{error}</div>}
 
@@ -864,17 +869,22 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
                 </button>
               ))}
             </div>
-            <div className="seg col">
-              {FONTS.map((f) => (
-                <button
-                  key={f}
-                  className={"fontbtn" + (prefs.font === f ? " on" : "")}
-                  style={{ fontFamily: f }}
-                  onClick={() => setPrefs((p) => ({ ...p, font: f }))}
-                >
-                  {f}
-                </button>
-              ))}
+            <div>
+              <h4 className="pop-h">Fuente</h4>
+              <div className="fuentes" role="radiogroup" aria-label="Fuente del texto">
+                {FONTS.map((f) => (
+                  <button
+                    key={f.label}
+                    role="radio"
+                    aria-checked={prefs.font === f.v}
+                    className={"fontbtn" + (prefs.font === f.v ? " on" : "")}
+                    style={{ fontFamily: f.css }}
+                    onClick={() => setPrefs((p) => ({ ...p, font: f.v }))}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <h4 className="pop-h">Interlineado</h4>
@@ -895,7 +905,7 @@ export default function Reader({ book, onClose, onAdd }: { book: ReaderBook; onC
               <div className="cintas-grid" role="radiogroup" aria-label="Diseño del marcapáginas">
                 {CINTAS.map((c, i) => (
                   <button key={c} role="radio" aria-checked={prefs.cinta === c} aria-label={`Marcapáginas ${i + 1}`} className={"cinta-op" + (prefs.cinta === c ? " on" : "")} onClick={() => setPrefs((p) => ({ ...p, cinta: c }))}>
-                    <img src={`${import.meta.env.BASE_URL}cintas/${c}.png`} alt="" draggable={false} />
+                    <img src={`${import.meta.env.BASE_URL}cintas/${c}.svg`} alt="" draggable={false} />
                   </button>
                 ))}
               </div>

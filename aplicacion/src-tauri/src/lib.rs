@@ -124,7 +124,7 @@ const GUIDE_EPUB: &[u8] = include_bytes!("../assets/Guia-de-Cinta.epub");
 const GUIDE_FILE: &str = "Guia-de-Cinta.epub";
 /// Valor de `books.source` que identifica la guía (así no se duplica y se puede reconocer).
 const GUIDE_SOURCE: &str = "cinta:guia";
-const GUIDE_VERSION: &str = "4";
+const GUIDE_VERSION: &str = "6";
 
 /// Instala la guía en la biblioteca la primera vez que se abre Cinta (marca `.guia` en la carpeta de datos).
 /// - Si el usuario la elimina, no vuelve a aparecer (para recuperarla: borrar `.guia` y abrir Cinta).

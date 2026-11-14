@@ -28,7 +28,8 @@ Cinta/
 ├─ herramientas/
 │  ├─ compilacion/           compilar-todo / compilar-portable / compilar-firmado (.ps1)
 │  ├─ verificacion/          verificar-release.mjs (versiones y workflow)
-│  └─ guia-incluida/         construir.py + portada.jpg que generan la Guía de Cinta
+│  ├─ guia-incluida/         construir.py + portada.jpg que generan la Guía de Cinta
+│  └─ cintas/                generar-cintas.py: crea los 16 marcapáginas (SVG) en aplicacion/public/cintas/
 └─ registro/                 REGISTRO-DE-CAMBIOS, REGISTRO-DE-VERSIONES, PENDIENTES
 ```
 

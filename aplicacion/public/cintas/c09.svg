@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 400" width="120" height="400" shape-rendering="geometricPrecision">
+<defs><clipPath id="f"><path d="M0.000 0.000 L0.000 400.000 L60.000 354.000 L120.000 400.000 L120.000 0.000 L0.000 0.000 Z"/></clipPath><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#472a16"/>
+<stop offset=".1" stop-color="#6b3f22"/><stop offset=".45" stop-color="#7a5238"/><stop offset="1" stop-color="#4b2c18"/></linearGradient>
+<linearGradient id="h" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".32"/>
+<stop offset=".08" stop-color="#000" stop-opacity="0"/><stop offset=".92" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient>
+<filter id="n" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" seed="7"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.9 0 0 0 -.78"/></filter>
+<filter id="m" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+<feTurbulence type="fractalNoise" baseFrequency=".07 .02" numOctaves="2" seed="2"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.2 0 0 0 -.5"/></filter><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".5"/>
+<stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+<g clip-path="url(#f)"><rect width="120" height="400" fill="url(#v)"/><rect width="120" height="400" filter="url(#m)" opacity=".16"/><rect width="120" height="400" filter="url(#n)" opacity=".42"/><rect width="120" height="400" fill="url(#h)"/><path d="M3.200 0.000 L3.200 393.514 L60.000 349.968 L116.800 393.514 L116.800 0.000" fill="none" stroke="#362011" stroke-width="1.2" opacity=".75"/><path d="M3.200 0.000 L3.200 393.514 L60.000 349.968 L116.800 393.514 L116.800 0.000" fill="none" stroke="#9f826f" stroke-width=".7" opacity=".5" transform="translate(.9 .9)"/><path d="M8.500 0.000 L8.500 382.773 L60.000 343.289 L111.500 382.773 L111.500 0.000" fill="none" stroke="#29180d" stroke-width="2.2" stroke-dasharray="5.5 4" stroke-linecap="round" stroke-linejoin="round" opacity=".55" transform="translate(.5 .8)"/><path d="M8.500 0.000 L8.500 382.773 L60.000 343.289 L111.500 382.773 L111.500 0.000" fill="none" stroke="#c7b6ab" stroke-width="1.5" stroke-dasharray="5.5 4" stroke-linecap="round" stroke-linejoin="round"/><rect width="120" height="26" fill="url(#p)"/>
+<path d="M0.000 0.000 L0.000 400.000 L60.000 354.000 L120.000 400.000 L120.000 0.000" fill="none" stroke="#000" stroke-opacity=".38" stroke-width="1.2"/></g>
+</svg>

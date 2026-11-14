@@ -85,7 +85,8 @@ html[data-tema="fondo"] {
   --fondo-panel: 22 23 27;       /* RGB del panel (sin comas, para rgb(… / alfa)) */
   --fondo-velo: 0 0 0;           /* RGB del velo de atenuación */
   --fondo-velo-a: .4;            /* opacidad del velo (la fija utilidades/fondo.ts, nunca por debajo del mínimo) */
-  --fondo-blur: 14px;            /* desenfoque de los paneles */
+  --fondo-blur: 14px;            /* desenfoque («cristal») de los paneles; fijo */
+  --fondo-img-blur: 0px;         /* desenfoque de la propia imagen; lo fija el deslizador de «Apariencia» (utilidades/fondo.ts) */
   --fondo-a-lateral: .66;        /* opacidad de la barra lateral y la barra superior */
   --fondo-a-tarjeta: .72;        /* opacidad de tarjetas y estados vacíos */
   --fondo-a-hoja: .9;            /* opacidad de hojas, menús y diálogos */
@@ -110,7 +111,13 @@ html[data-tema="fondo"][data-fondo-modo="claro"] {
   opacity: 0;
 }
 html[data-tema="fondo"] .fondo-capa.lista { opacity: 1; transition: opacity .3s ease; }
-.fondo-capa img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* La imagen se agranda 2,5 × el desenfoque por cada lado y la capa recorta el sobrante: así el borde difuminado nunca deja ver el fondo. */
+.fondo-capa img {
+  position: absolute; display: block; object-fit: cover;
+  left: calc(var(--fondo-img-blur, 0px) * -2.5); top: calc(var(--fondo-img-blur, 0px) * -2.5);
+  width: calc(100% + var(--fondo-img-blur, 0px) * 5); height: calc(100% + var(--fondo-img-blur, 0px) * 5);
+  filter: blur(var(--fondo-img-blur, 0px));
+}
 .fondo-capa .fondo-velo { position: absolute; inset: 0; background: rgb(var(--fondo-velo) / var(--fondo-velo-a)); }
 html:not([data-tema="fondo"]) .fondo-capa { display: none; }
 

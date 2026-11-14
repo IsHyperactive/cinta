@@ -7,32 +7,67 @@ Antes de empezar, lee `PENDIENTES.md`: ahí está lo siguiente que toca.
 
 ---
 
-## [0.7.0] · 2026-11-14 · Versión principal: «Hoja de libro», marcapáginas y archivos externos que lo recuerdan todo
-**Estado de verificación:** `verificar-release.mjs` en verde; `npm ci`, `npm run typecheck` y `npm run build` en verde; CI compila y publica los 9 archivos. La animación y el marcapáginas se probaron en una maqueta, no todavía dentro de la app real con un EPUB (queda anotado abajo).
-
-### Añadido
-- **Animación de página «Hoja de libro»** (`aplicacion/src/utilidades/hoja.ts`, usada por `lectores/Reader.tsx`): al pasar de página, la hoja gira sobre el lomo con perspectiva, se oscurece al girar, proyecta sombra sobre la página de debajo y la página nueva se asienta con un movimiento leve. Lleva el texto real del capítulo (copias A y B ya cargadas), no una hoja en blanco. Se elige en «Aa» → Animación, junto a Deslizar, Desvanecer, Zoom, Voltear, Cubo y Ninguna. Respeta `prefers-reduced-motion` y se desactiva en desplazamiento continuo.
-- **Marcapáginas con cinta**: al marcar una página, una cinta cuelga del centro del libro y se retira al quitar el marcador. En «Aa» hay **16 diseños** de cinta para elegir; el elegido se guarda con las preferencias del lector.
-- **Gesto de rueda/touchpad** (`utilidades/gestos.ts`): un deslizamiento de dos dedos pasa una sola página, aunque el touchpad siga enviando inercia; también funciona con la rueda del ratón. Se aplica a EPUB, PDF y cómics, y respeta el modo manga y el zoom.
-- **Los archivos abiertos sin agregar lo recuerdan todo**: posición y porcentaje (`ext_progress`) y marcadores, resaltados, notas y trazos (`annotations`, clave `p:<ruta>`). Al agregar después el libro a la biblioteca, su posición y sus anotaciones pasan al libro. La ruta se normaliza (`norm_ext_path`) para que «Abrir archivo», «Abrir con» y arrastrar y soltar usen la misma clave. Detalle en `documentacion/proyecto/MEMORIA-ARCHIVOS-EXTERNOS.md`.
-- `VERSIONES-PERMITIDAS.md`: lista cerrada de las 9 salidas permitidas, en la raíz del repositorio.
-- `documentacion/guias/PROMPT-VERSION-PRINCIPAL.md`: procedimiento usado para sustituir las versiones descontinuadas por esta.
+## [0.7.2] · 2026-11-14 · El «Desenfoque» del fondo personalizado ahora difumina la imagen de verdad
+**Estado de verificación:** probado en **Chromium real** con el CSS real de la app y la lógica real de `temas.ts`/`fondo.ts` (con Tauri simulado): se midió la nitidez de la imagen en pantalla con el desenfoque en 0, 20 y 24 px, y después de mover la atenuación al 50 % y al 90 %. `probar-fondo.mjs`, `contraste-temas.mjs` y `verificar-release.mjs` en verde. En este entorno, `npm ci`, `npm run typecheck`, `npm run build` y `cargo check --locked` también quedaron en verde. Pendiente probar en la app real (WebView2 y WebKitGTK).
 
 ### Cambiado
-- **Esta versión pasa a ser la versión principal.** Las releases y etiquetas **v0.6.1 y v0.6.2 quedaron eliminadas** por descontinuadas (tenían varios fallos); la única versión publicada es la **0.7.0**.
+- **Esta versión pasa a ser la única publicada.** Sustituye a la **0.7.0** y a la **0.7.1**, cuyas releases y etiquetas se eliminan por descontinuadas. Motivos: la 0.7.0 traía la animación «Hoja de libro» (rígida, plana y con un reverso gris que no igualaba a Apple Books) y el desenfoque del fondo no difuminaba la imagen; la 0.7.1 retiró esa animación y arregló la guía, pero seguía arrastrando el desenfoque roto.
+- La 0.7.2 reúne lo bueno de ambas: mantiene la retirada de «Hoja de libro» de la 0.7.1 y conserva la doble página, las fuentes a la vista y los marcapáginas vectoriales de la 0.7.0.
 - La entrega sigue siendo de **9 archivos exactos**: los dos portables de Windows, `.deb`/`.rpm`/AppImage de Linux x64 y ARM64, y `SHA256SUMS.txt`.
-- El icono de marcador de EPUB, PDF y documentos ahora refleja el estado activo (`active={marked}`), igual que en el resto de lectores.
 
 ### Corregido
-- **La memoria de un archivo abierto sin agregar se perdía según cómo se abriera**: la misma ruta podía guardarse con `\\?\`, con `\` o con mayúsculas distintas. Ahora se normaliza siempre y se leen también las filas antiguas.
-- **Al agregar a la biblioteca un archivo ya leído**, se conservaban la posición y las anotaciones; ahora se conservan también las guardadas con la ruta normalizada.
-- **El gesto de dos dedos ya no salta varias páginas** por una sola ráfaga de inercia.
+- **Causa del fallo:** el deslizador «Desenfoque» solo cambiaba `--fondo-blur`, que es el cristal esmerilado de los *paneles*; la imagen nunca se difuminaba. Con la atenuación alta el velo tapa la foto y el efecto en los paneles desaparece, por eso parecía que «dejaba de funcionar» al tocar el porcentaje. Además, ese valor se escribía en el estilo de `<html>` y pisaba la regla de «Reducir transparencia» del sistema.
+- **Ahora:** el deslizador (0–24 px) difumina la propia imagen (`--fondo-img-blur`, `filter: blur` sobre la imagen, entre la foto y el velo). La imagen se agranda un poco y la capa recorta el sobrante, así el borde difuminado no deja ver el fondo. La vista previa escala el desenfoque (×0,4) para verse como la pantalla real.
+- El cristal esmerilado de los paneles pasa a ser fijo (14 px, y 0 con «Reducir transparencia»), definido solo en `temas.css`.
+- El desenfoque solo suaviza píxeles, así que no empeora el contraste calculado con los píxeles nítidos: el mínimo de atenuación y las garantías de legibilidad no cambian.
+- Etiqueta: «Desenfoque de la imagen». Valor por defecto: 0 (la imagen se ve nítida hasta que se difumina). Se guarda como `desenfoqueImagen`; el valor antiguo no se lee (era de los paneles).
+- Guía de Cinta: texto de «Ajusta a tu gusto» actualizado; `GUIDE_VERSION` sube a 6.
 
 ### Falta por hacer
-- Probar «Hoja de libro» y el marcapáginas dentro de la app real con un EPUB real, en WebView2 (Windows) y WebKitGTK (Linux); solo se probaron en una maqueta.
-- Probar los 16 diseños de cinta y comprobar que la cinta no tapa texto ni controles en ventanas estrechas.
-- Probar los gestos de touchpad en equipos reales (Windows y Linux) y con el modo manga activado.
-- Probar la memoria de archivos externos con «Abrir archivo», «Abrir con» y arrastrar y soltar sobre el mismo archivo, y luego agregarlo a la biblioteca.
+- Probar el deslizador con fotos reales y pesadas en WebView2 (x64 y ARM64): el filtro se repite al arrastrar; si va a saltos en equipos modestos, limitar la imagen a 1280 px mientras se arrastra.
+- Valorar si «Zoom», «Voltear» y «Cubo» (animaciones de página) tienen sentido; Apple Books no las tiene.
+
+---
+
+## [0.7.1] · 2026-11-14 · Se retira la animación «Hoja de libro» y la guía ya no deja una página con dos líneas sueltas
+**Estado de verificación:** `verificar-release.mjs` en verde. **No se pudo ejecutar `npm ci`, `npm run typecheck` ni `npm run build`** en este entorno (sin red: las dependencias no se instalan). Con `tsc` se comprobó que los cambios no dejan nombres sin definir ni importaciones rotas (los únicos errores que quedan son los de los módulos que faltan). Pendiente compilar y probar en la app real.
+
+### Cambiado
+- **Se elimina por completo la animación «Hoja de libro»** (`utilidades/hoja.ts`, sus estilos y su opción en el panel «Aa»). Motivo: la hoja era rígida, giraba plana con perspectiva, crecía más que la página al acercarse al lector, dejaba una sombra fuera del borde de la página y mostraba un gris plano en la cara trasera; no se comportaba como el pase de hoja de Apple Books. Se prefiere no tener una animación que no esté a la altura.
+- Quien tenía elegida «Hoja de libro» pasa automáticamente a «Deslizar» (también cualquier valor desconocido guardado en `cinta.reader`).
+- Se conserva el libro a doble página (dos páginas enfrentadas con el lomo en el centro, desde 800 px) y la sombra del canal; `MIN_DOBLE` pasa a vivir en `Reader.tsx`.
+
+### Corregido
+- **Guía de Cinta:** la lista «Qué encontrarás» se partía y dejaba una página con solo los puntos 9 y 10. Ahora la lista (con su título) se mantiene entera en una sola página. `GUIDE_VERSION` sube a 5 para que se actualice la copia ya instalada.
+
+### Falta por hacer
+- Compilar y probar en Windows (WebView2, x64 y ARM64): doble página, animaciones restantes y guía.
+- Si se quiere un pase de hoja con curvatura real, hay que hacerlo con una malla (WebGL/canvas), no con CSS plano; no se reintroduce hasta que se pueda comparar fotograma a fotograma con Apple Books.
+
+---
+
+## [0.7.0] · 2026-11-14 · Panel «Aa» arreglado, marcapáginas vectoriales y hoja de libro a doble página
+**Estado de verificación:** `npm ci`, `npm run typecheck` y `npm run build` en verde; `verificar-release.mjs` en verde. Probado en **Chromium real** con el CSS real de la app, `epub.js` y la Guía de Cinta: el giro de la hoja se capturó fotograma a fotograma (0 %, 20 %, 40 %, 50 %, 60 %, 80 %, 95 % y final) hacia adelante y hacia atrás, incluido un cambio de capítulo (portada ↔ primer capítulo), sin errores en consola; el panel «Aa» y las 16 cintas se midieron y capturaron a 1440×900 con escala 2. **No verificado:** dentro de la app Tauri real (WebView2 en Windows, WebKitGTK en Linux), con EPUB de otros editores, ni en pantallas táctiles; `cargo check --locked` no se ejecutó (no se tocó Rust; solo cambió el número de versión).
+
+### Añadido
+- **Fuente del texto, a la vista.** Sección «Fuente» con 10 opciones, cada nombre escrito con su propia tipografía: «Original del libro» (respeta la fuente del EPUB), Georgia, Cambria, Palatino, Times New Roman, Constantia, Segoe UI, Verdana, Arial y Consolas. Cada una lleva fuentes de respaldo para Linux/macOS.
+- **Hoja de libro a doble página.** Con la ventana a 800 px o más, el libro se ve como un libro abierto: dos páginas enfrentadas con el lomo en el centro y una sombra de canal. Al pasar de página, la hoja es la página de la derecha: gira sobre el lomo y aterriza a la izquierda mostrando su **reverso**, que es la página izquierda del par siguiente. Al volver atrás ocurre lo contrario. Mientras gira se oscurece, proyecta sombra sobre la página que tapa y va dejando ver la página nueva por debajo.
+- `herramientas/cintas/generar-cintas.py`: genera los 16 marcapáginas.
+
+### Cambiado
+- **Marcapáginas vectoriales (SVG).** Los 16 PNG de 104×326 px se sustituyen por SVG: los recortes (muesca, punta, esquinas) son trazados matemáticos, nítidos a cualquier tamaño y densidad de pantalla. Cada cinta es un material distinto (satén, grosgrain, trenzado, cuero con costura, filo de oro o plata). Los 16 ids (`c01`…`c16`) se conservan, así que la cinta elegida sigue elegida; algunos diseños repetidos del juego anterior ahora son distintos (p. ej. `c10`, `c11`, `c14`, `c15`, `c16`).
+- **Marcapáginas más grande en la lectura:** de 96–160 px de alto a 170–290 px (proporción 3:10).
+- **Con 800 px o más, el libro se ve a doble página** (antes lo decidía `epub.js` con el mismo umbral por defecto; ahora se pasa explícito para que coincida con la hoja).
+- Con una sola página (ventana estrecha) la hoja de libro sigue siendo la animación anterior.
+
+### Corregido
+- **Panel «Aa»: la sección de fuentes no se veía y los marcapáginas se salían de su sitio.** Las secciones del panel se encogían a 0 px cuando el panel superaba su altura máxima. Ahora las secciones no se encogen y el panel se desplaza si no cabe.
+- **Miniaturas de marcapáginas enormes y mal recortadas** en el panel: ahora son miniaturas de 74 px de alto con la cinta completa.
+
+### Falta por hacer
+- Probar la hoja a doble página en Windows (WebView2), Linux (WebKitGTK) y con EPUB de editoriales reales (capítulos muy pesados, imágenes a toda página). Los capítulos de más de 2,5 MB no se copian y usan el desvanecido.
+- La hoja es rígida (gira plana con perspectiva y sombras); no se curva como la de Apple Books.
+- Arrastrar la esquina de la hoja con el dedo o el ratón para pasar de página.
 
 ## [0.6.2] · 2026-11-14 · La búsqueda de la biblioteca ya no se aplasta ni cae bajo la barra lateral
 **Estado de verificación:** `npm run typecheck` y `npm run build` en verde; `verificar-release.mjs` en verde. La release v0.6.2 se republicó desde GitHub Actions con **9 archivos: 8 binarios más `SHA256SUMS.txt`** (Windows x64/ARM64: un `.exe` portable por arquitectura; Linux x64/ARM64: `.deb`, `.rpm` y AppImage); comprobé los checksums de los portables de Windows x64/ARM64 y del AppImage de Linux x64. Medido en el DOM real (Firefox WebDriver BiDi) a 1300, 1100, 1041, 1040, 1000, 950, 900, 850, 821, 820, 760, 700, 640, 626, 600, 500 y 480 px, tanto en Inicio como en «Libros» con el selector de orden y el conmutador de vista visibles: en todos, la barra lateral sigue a la izquierda y la búsqueda queda dentro de la barra superior con su ancho completo (390 px, o todo el ancho disponible si la ventana es más estrecha), sin encogerse. También en WebKitGTK (el motor que usa la app en Linux) a 1366 px y en la app Tauri real por AT-SPI (búsqueda en la fila superior). En móvil real (≤ 479 px) se conserva el diseño anterior con la barra arriba.

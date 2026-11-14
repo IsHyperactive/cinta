@@ -28,10 +28,13 @@
 
 /* vista previa en vivo: la imagen, el velo y un panel con texto, con las variables calculadas */
 .ap-prev { position: relative; height: 130px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); isolation: isolate; contain: paint; }
-.ap-prev img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+/* la vista previa es ~5 veces más pequeña que la pantalla: el desenfoque de la imagen se escala igual para que se vea lo mismo */
+.ap-prev { --pb: calc(var(--fondo-img-blur, 0px) * .4); }
+.ap-prev img { position: absolute; object-fit: cover; z-index: -2; left: calc(var(--pb) * -2.5); top: calc(var(--pb) * -2.5);
+  width: calc(100% + var(--pb) * 5); height: calc(100% + var(--pb) * 5); filter: blur(var(--pb)); }
 .ap-prev-velo { position: absolute; inset: 0; z-index: -1; background: rgb(var(--fondo-velo) / var(--fondo-velo-a)); }
 .ap-prev-lat { position: absolute; left: 0; top: 0; bottom: 0; width: 26%; display: flex; flex-direction: column; gap: 8px; padding: 14px 10px;
-  background: rgb(var(--fondo-panel) / .66); -webkit-backdrop-filter: blur(var(--fondo-blur)); backdrop-filter: blur(var(--fondo-blur)); }
+  background: rgb(var(--fondo-panel) / .66); -webkit-backdrop-filter: blur(var(--fondo-blur, 14px)); backdrop-filter: blur(var(--fondo-blur, 14px)); }
 .ap-prev-lat b { display: block; height: 7px; border-radius: 4px; background: var(--muted); }
 .ap-prev-main { position: absolute; left: 32%; right: 12px; top: 18px; display: flex; flex-direction: column; gap: 5px; color: var(--text); }
 .ap-prev-main strong { font-size: 14px; }

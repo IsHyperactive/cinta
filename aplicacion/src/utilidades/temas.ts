@@ -32,11 +32,11 @@ export const TEMAS: { id: Exclude<TemaId, "fondo">; nombre: string; muestra: Mue
 const VALIDOS: TemaId[] = ["auto", "claro", "oscuro", "sepia", "medianoche", "fondo"];
 const K_TEMA = "cinta.tema";
 const K_ANTERIOR = "cinta.tema.anterior";
-const K_AJUSTES = "cinta.fondo"; // { atenuacion: number | null (0–1), desenfoque: number (px) }
+const K_AJUSTES = "cinta.fondo"; // { atenuacion: number | null (0–1), desenfoqueImagen: number (px) }. (Antes «desenfoque» difuminaba los paneles; ese valor ya no se lee.)
 const K_PALETA = "cinta.fondo.paleta"; // caché para que el script de index.html pinte el fondo sin esperar a la imagen
 export const MINIATURA = 48;
 const LADO_MAX = 1920;
-const DESENFOQUE_DEF = 14;
+const DESENFOQUE_DEF = 0; // la imagen se ve nítida hasta que el usuario la difumina
 
 const leer = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
 const escribir = (k: string, v: string | null) => {
@@ -64,7 +64,7 @@ function ajustesGuardados(): { atenuacion: number | null; desenfoque: number } {
   try {
     const j = JSON.parse(leer(K_AJUSTES) ?? "null");
     const a = typeof j?.atenuacion === "number" ? Math.min(1, Math.max(0, j.atenuacion)) : null;
-    const d = typeof j?.desenfoque === "number" ? Math.min(24, Math.max(0, j.desenfoque)) : DESENFOQUE_DEF;
+    const d = typeof j?.desenfoqueImagen === "number" ? Math.min(24, Math.max(0, j.desenfoqueImagen)) : DESENFOQUE_DEF;
     return { atenuacion: a, desenfoque: d };
   } catch {
     return { atenuacion: null, desenfoque: DESENFOQUE_DEF };
@@ -105,7 +105,7 @@ let capa: HTMLDivElement | null = null;
 /** Todas las variables que puede poner el fondo; se quitan siempre juntas, también las que puso el script de index.html. */
 const VARS_FONDO = [
   "--bg", "--panel", "--text", "--muted", "--accent", "--accent-text", "--border", "--desktop-sidebar", "--desktop-card",
-  "--desktop-shadow", "--fondo-panel", "--fondo-velo", "--fondo-velo-a", "--fondo-blur",
+  "--desktop-shadow", "--fondo-panel", "--fondo-velo", "--fondo-velo-a", "--fondo-blur", "--fondo-img-blur",
 ];
 
 function asegurarCapa(): HTMLDivElement {
@@ -313,7 +313,7 @@ export async function quitarFondo(): Promise<void> {
 }
 
 /**
- * Ajusta atenuación (0–1) y desenfoque (px) con los deslizadores.
+ * Ajusta atenuación (0–1) y desenfoque de la imagen (px) con los deslizadores.
  * Devuelve `true` si se pidió una atenuación menor que el mínimo que garantiza el contraste (y se dejó el mínimo).
  */
 export function ajustarFondo(cambio: { atenuacion?: number; desenfoque?: number }): boolean {
@@ -325,7 +325,7 @@ export function ajustarFondo(cambio: { atenuacion?: number; desenfoque?: number 
     limitado = cambio.atenuacion < p.minAtenuacion - 1e-9;
   }
   const desenfoque = cambio.desenfoque !== undefined ? Math.min(24, Math.max(0, cambio.desenfoque)) : estado.desenfoque;
-  escribir(K_AJUSTES, JSON.stringify({ atenuacion: elegida, desenfoque }));
+  escribir(K_AJUSTES, JSON.stringify({ atenuacion: elegida, desenfoqueImagen: desenfoque }));
   poner({
     atenuacionElegida: elegida,
     desenfoque,

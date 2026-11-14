@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 400" width="120" height="400" shape-rendering="geometricPrecision">
+<defs><clipPath id="f"><path d="M0.000 0.000 L0.000 400.000 L60.000 354.000 L120.000 400.000 L120.000 0.000 L0.000 0.000 Z"/></clipPath><linearGradient id="v" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#101d36"/><stop offset=".07" stop-color="#132442"/><stop offset=".22" stop-color="#1f3a6b"/>
+<stop offset=".34" stop-color="#5b6f93"/><stop offset=".5" stop-color="#1f3a6b"/><stop offset=".68" stop-color="#132442"/>
+<stop offset=".84" stop-color="#50658c"/><stop offset="1" stop-color="#1a315b"/></linearGradient>
+<linearGradient id="h" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#000" stop-opacity=".34"/><stop offset=".1" stop-color="#000" stop-opacity=".04"/>
+<stop offset=".4" stop-color="#fff" stop-opacity=".05"/><stop offset=".62" stop-color="#fff" stop-opacity="0"/>
+<stop offset=".9" stop-color="#000" stop-opacity=".06"/><stop offset="1" stop-color="#000" stop-opacity=".36"/></linearGradient><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".5"/>
+<stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+<g clip-path="url(#f)"><rect width="120" height="400" fill="url(#v)"/><rect width="120" height="400" fill="url(#h)"/><rect width="120" height="26" fill="url(#p)"/>
+<path d="M0.000 0.000 L0.000 400.000 L60.000 354.000 L120.000 400.000 L120.000 0.000" fill="none" stroke="#000" stroke-opacity=".38" stroke-width="1.2"/></g>
+</svg>

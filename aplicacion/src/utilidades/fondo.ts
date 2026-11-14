@@ -237,7 +237,8 @@ const css = (c: RGB) => `${Math.round(c[0])} ${Math.round(c[1])} ${Math.round(c[
 /**
  * Calcula la paleta completa.
  * @param elegida atenuación que pidió el usuario (0–1) o null para usar la de por defecto
- * @param desenfoque px de desenfoque de los paneles (0–24)
+ * @param desenfoque px de desenfoque de la IMAGEN de fondo (0–24). El de los paneles (cristal esmerilado) es fijo y vive en temas.css.
+ *   El desenfoque solo suaviza píxeles, así que nunca empeora el contraste calculado con los píxeles nítidos (el peor caso ya está cubierto).
  */
 export function calcularPaleta(an: Analisis, elegida: number | null, desenfoque: number): Paleta {
   const modo = elegirModo(an);
@@ -292,7 +293,7 @@ export function calcularPaleta(an: Analisis, elegida: number | null, desenfoque:
     "--fondo-panel": css(panelBase),
     "--fondo-velo": modo === "oscuro" ? "0 0 0" : "255 255 255",
     "--fondo-velo-a": atenuacion.toFixed(3),
-    "--fondo-blur": `${Math.max(0, Math.min(24, Math.round(desenfoque)))}px`,
+    "--fondo-img-blur": `${Math.max(0, Math.min(24, Math.round(desenfoque)))}px`,
   };
 
   return {
